@@ -20,13 +20,13 @@
         }
     },
     "background": {
-      "scripts": ["options.js", "lib/web3.min.js", "background.js"],
+      "scripts": ["options.js", "lib/web3.min.js", "lib/ethjs-util.js", "background.js"],
       "persistent": false
     },
     "content_scripts": [
         {
             "matches": ["https://marketplace.axieinfinity.com/*"],
-            "js": ["options.js", "traitmapping.js", "contentScript.js"]
+            "js": ["options.js", "traitmapping.js", "contentScript.js", "lib/ethjs-util.js"]
         }
     ],
     "web_accessible_resources": [
