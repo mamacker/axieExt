@@ -92,12 +92,15 @@ debugLog("mutationsList", mutationsList);
         if (window.location.href == currentURL && !window.location.href.startsWith("https://marketplace.axieinfinity.com/axie/")) { //ignore details page
             //fix Order By drop down z-index
             if (mutationsList.length == 1 && mutationsList[0].target.children.length == 2){
-                var mutated = mutationsList[0];
+              var mutated = mutationsList[0];
+			  try {
                 if (mutated.target.children[1].children[0].nodeName == "UL" && mutated.target.children[1].children[0].textContent.indexOf("Highest Price") != -1) {
                     mutated.target.children[1].style["zIndex"] = 99999;
                 } else if (mutated.target.children[1].className.includes("transition-opacity")) {
                     mutated.target.children[1].style["zIndex"] = 99998;
                 }
+			  } catch (ex) {
+			  }
             }
 
         }
@@ -680,11 +683,13 @@ function genMorphDiv(axie) {
   let morphDiv = document.getElementById("morphinButton");
   if (morphDiv == null) {
 	morphDiv = document.createElement("div");
-	morphDiv.style.position = "absolute";
+	morphDiv.style.position = "relative";
 	morphDiv.style.right = "0px";
 	morphDiv.style.margin = "5px";
 	morphDiv.style.paddingRight = "30px";
 	morphDiv.style.paddingTop = "3px";
+	morphDiv.style.float = "right";
+	morphDiv.id = "morphinButton";
 
 	let fixedBars = document.getElementsByClassName("fixed");
 	if (!fixedBars || fixedBars.length < 4) {
