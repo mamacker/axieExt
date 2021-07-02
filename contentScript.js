@@ -886,6 +886,205 @@ function renderCard(anc, axie) {
 	}
 }
 
+function setupCart() {
+  let cards = document.getElementsByClassName("axie-card");
+  for (let i = 0; i < cards.length; i++) {
+	if (!cards[i].getAttribute("draggable")) {
+	  cards[i].setAttribute("draggable", true);
+	  cards[i].addEventListener("dragstart", drag);
+	  cards[i].addEventListener("dragend", dragend);
+	  cards[i].id = cards[i].parentElement.href;
+	}
+  }
+
+  if (!document.getElementById("cartdropzone")) {
+	let leftTray = document.getElementsByClassName("pb-32 w-full")[0];
+	if (leftTray) {
+	  let targetDiv = document.createElement("div");
+
+	  targetDiv.style["min-height"] = "100px";
+	  targetDiv.style["overflow-y"] = "auto";
+	  targetDiv.id = "cartdropzone";
+
+	  leftTray.appendChild(targetDiv);
+	  leftTray.style["overflow-y"] = "hidden";
+	  leftTray.firstChild.style["margin-bottom"] = "0px";
+	  leftTray.firstChild.style["padding-bottom"] = "0px";
+
+	  targetDiv.addEventListener("drop", drop);
+	  targetDiv.addEventListener("dragover", allowDrop);
+	  targetDiv.addEventListener("dragleave", dragLeave);
+	  targetDiv.classList.add("dragtarget");
+	  setTimeout(() => {
+		targetDiv.style.maxHeight = (window.innerHeight - targetDiv.offsetTop - 10) + "px";
+	  }, 100)
+	}
+  }
+}
+
+
+function allowDrop(ev) {
+    //console.log("allowDrop")
+  ev.preventDefault();
+  if (ev.target.id == "cartdropzone") {
+  	ev.target.style.border = "3px solid green";
+  }
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text/plain", ev.target.id);
+
+  let targets = document.getElementsByClassName("dragtarget");
+  for (target in targets) {
+	if (targets[target] && targets[target].style) {
+		targets[target].style.border = "1px solid blue";
+	}
+  }
+}
+
+function dragend(ev) {
+  let targets = document.getElementsByClassName("dragtarget");
+  for (target in targets) {
+	if (targets[target] && targets[target].style) {
+		targets[target].style.border = "";
+	}
+  }
+}
+
+function dragLeave(ev) {
+  //console.log(ev.target.src)
+  ev.target.style.border = "";
+}
+
+function buildShelfButtons() {
+  let shelf = document.getElementById("shelf");
+  if (!shelf) {
+	shelf = document.createElement("div");
+	shelf.style.margin = "5px";
+	shelf.style.paddingRight = "3px";
+	shelf.style.paddingTop = "3px";
+	shelf.id = "shelf";
+
+	let button = document.createElement("button");
+	button.classList.add( "px-20",
+	  "py-2",
+	  "relative",
+	  "rounded",
+	  "transition",
+	  "focus:outline-none",
+	  "border",
+	  "text-white",
+	  "border-primary-4",
+	  "hover:border-primary-3",
+	  "active:border-primary-5",
+	  "bg-primary-4",
+	  "hover:bg-primary-3",
+	  "active:bg-primary-5",
+	);
+	shelf.appendChild(button);
+	button.title="Click this button to open these axies.";
+
+	let span = document.createElement("span");
+	span.classList.add("visible");
+	button.appendChild(span);
+
+	let div = document.createElement("div");
+	div.classList.add("flex", "items-center");
+	span.appendChild(div);
+
+	let textDiv = document.createElement("div");
+	textDiv.textContent = "Open Axies";
+	div.appendChild(textDiv);
+
+	button.addEventListener("click", () => {
+	  let allAxies = document.getElementsByClassName("cartaxie");
+	  for (let i = 0; i < allAxies.length; i++) {
+		window.open(allAxies[i].getAttribute("href"));
+	  }
+	});
+
+  	let leftTray = document.getElementsByClassName("pb-32 w-full")[0];
+	let dropZone = document.getElementById("cartdropzone")
+	
+	leftTray.insertBefore(shelf, dropZone);
+  }
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  ev.target.style.border = "";
+  let target = ev.target;
+  if (target.id == "cartdropzone") {
+	console.log(ev);
+	var data = ev.dataTransfer.getData("text/plain");
+	console.log("Card dropped:", data, document.getElementById(data));
+
+	let itemDiv = document.createElement("div");
+	itemDiv.style.maxWidth = "193px";
+	itemDiv.classList.add(...("border border-gray-3 bg-gray-4 rounded transition hover:shadow hover:border-gray-6".split(" ")));
+	itemDiv.classList.add("cartaxie");
+	itemDiv.style.maxHeight = "116px";
+	itemDiv.setAttribute("href", data);
+	itemDiv.style.position = "relative";
+	itemDiv.addEventListener("click", ((item) => {
+	  return (e) => {
+		e.preventDefault();
+		window.open(item.getAttribute("href"));
+	  };
+	})(itemDiv));
+
+	let closeButton = document.createElement("div");
+	closeButton.style.position = "absolute";
+	closeButton.style.top = "-2px";
+	closeButton.style.right = "3px";
+	closeButton.style.cursor = "pointer";
+	closeButton.textContent = "X"
+	closeButton.style.fontWeight = "bold";
+	closeButton.style.fontSize = "20px";
+	itemDiv.appendChild(closeButton);
+
+	closeButton.addEventListener("click", ((item) => {
+	  return (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		item.remove();
+	  };
+	})(itemDiv));
+
+	let sourceCard = document.getElementById(data);
+
+	let dataDivs = sourceCard.getElementsByClassName("flex-row");
+
+	if (target.firstChild) {
+	  target.insertBefore(itemDiv, target.firstChild);
+	} else {
+	  target.append(itemDiv);
+	}
+
+	for (let rowCt = dataDivs.length -1; rowCt > -1 ; rowCt--) {
+	  let row = dataDivs[rowCt].cloneNode(true);
+	  row.style.maxHeight = "100px";
+	  row.style.fontSize = "var(--font-size-14);"
+	  row.classList.add("justify-center");
+	  for (let i = 0; i < row.children.length; i++) {
+		row.children[i].classList.remove("md:text-20");
+	  }
+	  row.classList.remove("font-medium");
+	  itemDiv.appendChild(row);
+	}
+
+	let sourceImg = sourceCard.getElementsByTagName("img")[0].parentElement.cloneNode(true)
+	sourceImg.style.maxHeight = "100px";
+	sourceImg.style.overflow = "hidden";
+	sourceImg.firstChild.style.maxHeight = "100px";
+	sourceImg.firstChild.style.position = "relative";
+	sourceImg.firstChild.style.top = "-21px";
+	itemDiv.appendChild(sourceImg);
+
+	buildShelfButtons();
+  }
+}
+
 let canUseCallback = true;
 async function run() {
     debugLog("run");
