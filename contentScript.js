@@ -105,6 +105,7 @@ debugLog("mutationsList", mutationsList);
             currentURL = window.location.href;
 		    clearMorphDiv();
             debugLog('New URI detected.');
+
         }
         //Only call run() if we find certain conditions in the mutation list
         if(loadComplete(mutationsList)) {
@@ -357,6 +358,7 @@ function getAxieInfoMarket(id) {
             resolve(axies[id]);
         } else {
             axies[id] = {}; //kind of mutex
+		  try {
             chrome.runtime.sendMessage({contentScriptQuery: "getAxieInfoMarket", axieId: id}, function(result) {
 			    //console.log("From fetch: ", result);
                 axies[id] = result;
@@ -371,6 +373,9 @@ function getAxieInfoMarket(id) {
                 }
                 resolve(result);
             });
+		  } catch(ex) {
+
+		  }
         }
     });
 }
@@ -378,20 +383,23 @@ function getAxieInfoMarket(id) {
 function invalidateAxieInfoMarketCB(id, cb) {
     debugLog("invalidateAxieInfoMarket", id);
 	axies[id] = {}; //kind of mutex
-	chrome.runtime.sendMessage({contentScriptQuery: "invalidateAxieInfoMarket", axieId: id}, function(result) {
-		console.log("From fetch: ", result);
-		axies[id] = result;
-		if (result && result["stage"] && result.stage > 2) {
-			axies[id].genes = genesToBin(BigInt(axies[id].genes));
-			let traits = getTraits(axies[id].genes);
-			let qp = getQualityAndPureness(traits, axies[id].class.toLowerCase(), false);
-			axies[id].traits = traits;
-			axies[id].quality = qp.quality;
-			axies[id].pureness = qp.pureness;
-			axies[id].secondary = qp.secondary;
-		}
-		cb(result);
-	});
+	try {
+	  chrome.runtime.sendMessage({contentScriptQuery: "invalidateAxieInfoMarket", axieId: id}, function(result) {
+		  console.log("From fetch: ", result);
+		  axies[id] = result;
+		  if (result && result["stage"] && result.stage > 2) {
+			  axies[id].genes = genesToBin(BigInt(axies[id].genes));
+			  let traits = getTraits(axies[id].genes);
+			  let qp = getQualityAndPureness(traits, axies[id].class.toLowerCase(), false);
+			  axies[id].traits = traits;
+			  axies[id].quality = qp.quality;
+			  axies[id].pureness = qp.pureness;
+			  axies[id].secondary = qp.secondary;
+		  }
+		  cb(result);
+	  });
+	} catch(ex) {
+	}
 }
 
 function getAxieInfoMarketCB(id, cb) {
@@ -401,19 +409,21 @@ function getAxieInfoMarketCB(id, cb) {
 	} else {
 		axies[id] = {}; //kind of mutex
 	  	setTimeout(() => { // Give it a little space around in the time.
-		  chrome.runtime.sendMessage({contentScriptQuery: "getAxieInfoMarket", axieId: id}, function(result) {
-			  axies[id] = result;
-			  if (result.stage > 2) {
-				  axies[id].genes = genesToBin(BigInt(axies[id].genes));
-				  let traits = getTraits(axies[id].genes);
-				  let qp = getQualityAndPureness(traits, axies[id].class.toLowerCase(), false);
-				  axies[id].traits = traits;
-				  axies[id].quality = qp.quality;
-				  axies[id].pureness = qp.pureness;
-				  axies[id].secondary = qp.secondary;
-			  }
-			  cb(result);
-		  });
+		  try {
+			chrome.runtime.sendMessage({contentScriptQuery: "getAxieInfoMarket", axieId: id}, function(result) {
+				axies[id] = result;
+				if (result.stage > 2) {
+					axies[id].genes = genesToBin(BigInt(axies[id].genes));
+					let traits = getTraits(axies[id].genes);
+					let qp = getQualityAndPureness(traits, axies[id].class.toLowerCase(), false);
+					axies[id].traits = traits;
+					axies[id].quality = qp.quality;
+					axies[id].pureness = qp.pureness;
+					axies[id].secondary = qp.secondary;
+				}
+				cb(result);
+			});
+		  }catch(Ex) {}
 		}, Math.random() * 1000);
 	}
 }
@@ -1096,6 +1106,7 @@ debugLog(axieAnchors);
             clearInterval(intID);
             intID = -1;
             notReadyCount = 0;
+		  	setupCart();
 debugLog("run ready");
         } else {
             notReadyCount++;
