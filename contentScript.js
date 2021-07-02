@@ -1025,9 +1025,7 @@ function drop(ev) {
   ev.target.style.border = "";
   let target = ev.target;
   if (target.id == "cartdropzone") {
-	console.log(ev);
 	var data = ev.dataTransfer.getData("text/plain");
-	console.log("Card dropped:", data, document.getElementById(data));
 
 	let itemDiv = document.createElement("div");
 	itemDiv.style.maxWidth = "193px";
