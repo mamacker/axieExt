@@ -922,7 +922,6 @@ function setupCart() {
 	  targetDiv.id = "cartdropzone";
 
 	  leftTray.appendChild(targetDiv);
-	  leftTray.style["overflow-y"] = "hidden";
 	  leftTray.firstChild.style["margin-bottom"] = "0px";
 	  leftTray.firstChild.style["padding-bottom"] = "0px";
 
