@@ -1,5 +1,10 @@
 
-const optionsMapping = {enableOption: ENABLE_OPTION, minimalOption: MINIMAL_OPTION, showBreedsStats: SHOW_BREEDS_STATS_OPTION};
+const optionsMapping = {
+    enableOption: ENABLE_OPTION, 
+    minimalOption: MINIMAL_OPTION, 
+    showBreedsStats: SHOW_BREEDS_STATS_OPTION,
+    eggParentOption: SHOW_EGG_PARENTS};
+
 $(document).ready(function(){
     let options = Object.keys(optionsMapping);
     console.log("Got options...", optionsMapping);

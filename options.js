@@ -1,6 +1,7 @@
 const ENABLE_OPTION = "axieEx_enabled";
 const MINIMAL_OPTION = "axieEx_minimal";
-const SHOW_BREEDS_STATS_OPTION = "axieEx_breedsStats"
+const SHOW_BREEDS_STATS_OPTION = "axieEx_breedsStats";
+const SHOW_EGG_PARENTS = "axieEx_eggParents";
 
 function putOption(key, value) {
     let persist = {};
@@ -15,7 +16,11 @@ function putOptions(persist) {
 }
 
 function getOptions(callback) {
-    chrome.storage.sync.get([ENABLE_OPTION, MINIMAL_OPTION, SHOW_BREEDS_STATS_OPTION], callback);
+    chrome.storage.sync.get([
+        ENABLE_OPTION, 
+        MINIMAL_OPTION, 
+        SHOW_EGG_PARENTS,
+        SHOW_BREEDS_STATS_OPTION], callback);
 }
 
 function getOption(key, callback) {
@@ -28,6 +33,7 @@ function resetOptions() {
     defaultOptions[ENABLE_OPTION] = true;
     defaultOptions[MINIMAL_OPTION] = false;
     defaultOptions[SHOW_BREEDS_STATS_OPTION] = true;
+    defaultOptions[SHOW_EGG_PARENTS] = true;
     putOptions(defaultOptions);
     return defaultOptions;
 }

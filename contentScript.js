@@ -1258,7 +1258,9 @@ TODO: add support for breeding window
           return function(axie, matron, sire) {
             //console.log(matron, sire);
             if (!(options.axieEx_minimal && isProfilePage())) {
-              renderEggCard(anchor, matron, sire);
+              if(options.axieEx_eggParents) {
+                renderEggCard(anchor, matron, sire);
+              }
             }
           };
         })(anc));
@@ -1281,6 +1283,7 @@ getOptions((response) => {
     options[ENABLE_OPTION] = response[ENABLE_OPTION];
     options[SHOW_BREEDS_STATS_OPTION] = response[SHOW_BREEDS_STATS_OPTION];
     options[MINIMAL_OPTION] = response[MINIMAL_OPTION];
+    options[SHOW_EGG_PARENTS] = response[SHOW_EGG_PARENTS];
     if (options[ENABLE_OPTION]) {
         init();
         intID = setInterval(run, 1000);
