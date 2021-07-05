@@ -373,7 +373,7 @@ function getAxieInfoMarket(id) {
             axies[id].quality = qp.quality;
             axies[id].pureness = qp.pureness;
             axies[id].secondary = qp.secondary;
-          }
+          } 
           resolve(result);
         });
       } catch(ex) {
@@ -405,9 +405,18 @@ function invalidateAxieInfoMarketCB(id, cb) {
   }
 }
 
-function getAxieInfoMarketCB(id, cb) {
+function getParentAxieDataCB(id, context, matron, sire, cb) {
+  debugLog("getParentAxieData", id);
+  getAxieInfoMarketCB(matron, function(matronResult) {
+    getAxieInfoMarketCB(sire, function(sireResult) {
+      cb(id, context, matronResult, sireResult);
+    });
+  });
+}
+
+function getAxieInfoMarketCB(id, cb, renderEggDetails) {
   debugLog("getAxieInfoMarketCB", id);
-  if (id in axies) {
+  if (id in axies && axies[id].story_id) {
     cb(axies[id]);
   } else {
     axies[id] = {}; //kind of mutex
@@ -423,11 +432,20 @@ function getAxieInfoMarketCB(id, cb) {
             axies[id].quality = qp.quality;
             axies[id].pureness = qp.pureness;
             axies[id].secondary = qp.secondary;
+          } else {
+            // Check to see if the want parental details.
+            if (renderEggDetails) {
+              getParentAxieDataCB(id, renderEggDetails, axies[id].matronId, axies[id].sireId, function(id, context, matron, sire) {
+                context(id, matron, sire);
+              });
+            }
           }
-          cb(result);
+          if (cb) {
+            cb(result);
+          }
         });
       }catch(Ex) {}
-    }, Math.random() * 1000);
+    }, Math.random() * 500);
   }
 }
 
@@ -801,8 +819,17 @@ function renderCard(anc, axie) {
     }
 
     let breedHolder = anc.getElementsByTagName("small");
+    // Check to see if this is the second call.
+    if (breedHolder[1].classList.contains("smalldetails")) {
+      return;
+    }
+
     breedCount = breedHolder[1].innerText;
     breedCount = breedCount.replace(/.*:/,"") - 0;
+
+
+    breedHolder[1].classList.add("smalldetails");
+    breedHolder[1].style.color = "white";
 
     let stats = "";
     if (axie.stats && axie.stats.hp) {
@@ -810,7 +837,6 @@ function renderCard(anc, axie) {
       if (options.axieEx_minimal) {
         stats = "H:" + axie.stats.hp + " S:" + axie.stats.speed + " S:" + axie.stats.skill + " M:" + axie.stats.morale + " P:" + secondary + "%";
       }
-
     }
 
     content.className = card.children[2].className;
@@ -828,7 +854,9 @@ function renderCard(anc, axie) {
     } else if (axie.stage < 3) {
       birthTime = new Date((axie.birthDate * 1000) + (5*86400000));
       timeToBirth = birthTime.getTime() - new Date().getTime();
-      timeToHatch = (new Date((axie.birthDate * 1000) + (5*86400000)) + "").replace(/GMT.*/,"");
+      timeToHatch = (new Date((axie.birthDate * 1000) + (5*86400000)) + "").replace(/GMT.*/,"").replace(/202\d.*/,"");
+
+
       var timerCheck;
       if (options.axieEx_minimal) {
         timerCheck = 1;
@@ -850,6 +878,11 @@ function renderCard(anc, axie) {
           }
         } else {
           breedHolder[1].textContent = "Hours to hatch: " + hoursToBirth;
+        }
+
+        if (breedHolder[1].getAttribute("eggDetails")) {
+          console.log("Has egg details.");
+          breedHolder[1].textContent = breedHolder[1].textContent + breedHolder[1].getAttribute("eggDetails");
         }
 
         let imgHolder = anc.querySelector(".img-placeholder");
@@ -905,6 +938,38 @@ function renderCard(anc, axie) {
         idHolder.parentElement.parentElement.appendChild(marketDiv);
       }
     }
+  }
+}
+
+// Render the details of the parent.
+function renderEggCard(anc, matron, sire, attempt) {
+  if (!attempt) {
+    attempt = 1;
+  }
+
+  if (attempt > 15) {
+    //Bail.
+    console.log("Giving up on adding egg details");
+    return;
+  }
+
+  let smallDetails = anc.getElementsByClassName("smalldetails");
+  if (smallDetails && smallDetails.length >= 1) {
+    let smallDetail = smallDetails[0];
+    if (smallDetail) {
+      let matronQuality = Math.floor(matron.quality * 100);
+      let sireQuality = Math.floor(sire.quality * 100);
+      smallDetail.textContent = smallDetail.textContent + " - M: " + matronQuality + "% S: " + sireQuality + "%";
+      smallDetail.setAttribute("eggDetails"," - M: " + matronQuality + "% S: " + sireQuality + "%");
+      if (matronQuality > 97 && sireQuality > 97) {
+        smallDetail.style.color = "green";
+      }   
+    }
+  } else {
+    setTimeout(() => {
+      attempt += 1;
+      renderEggCard(anc, matron, sire, attempt);
+    }, 300);
   }
 }
 
@@ -1122,7 +1187,6 @@ function drop(ev) {
   }
 }
 
-let canUseCallback = true;
 async function run() {
   debugLog("run");
   let dbg;
@@ -1193,7 +1257,7 @@ TODO: add support for breeding window
         //this will break when localization is implemented on the site
         xpath = "//div[text()='Stats']";
         pathNode = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        console.log(pathNode);
+        //console.log(pathNode);
         detailsNode = pathNode;
         let traits = genGenesDiv(axie, detailsNode, "details");
         if (detailsNode.childElementCount == 0 && currentURL.startsWith("https://marketplace.axieinfinity.com/axie/")) {
@@ -1216,10 +1280,11 @@ TODO: add support for breeding window
 
                 hostNode.appendChild(traits2);
                 //console.log(traits2.firstChild.firstChild)
-                let dataDiv = document.createElement("div");
+				let dataDiv = document.createElement("td");
                 let purity = Math.round(axie.quality * 100);
                 let secondary = Math.round(axie.secondary * 100);
                 dataDiv.textContent = "P: " + purity + "% S: " + secondary + "%";
+				dataDiv.style.paddingRight = "10px";
                 traits2.firstChild.firstChild.appendChild(dataDiv);
 
                 let marketLink = buildSearchLink(axie);
@@ -1246,7 +1311,7 @@ TODO: add support for breeding window
           //get all axies on the page and break
           debugLog("getting axies");
           //var results = await getAxieBriefList();
-          var results = await getAxieInfoMarket(axieId);
+          var results = await getAxieInfoMarketCB(axieId);
           debugLog(axies);
           break;
         }
@@ -1261,40 +1326,16 @@ TODO: add support for breeding window
         let anc = axieAnchors[i];
         let axieId = parseInt(anc.href.substring(anc.href.lastIndexOf("/") + 1));
 
-        let axie;
-        if (!(axieId in axies)) {
-          if (!canUseCallback) {
-            axie = await getAxieInfoMarket(axieId);
-            if (axie && axie.fromCache) {
-              canUseCallback = true;
-            }
-            if (axie) {
-              renderCard(anc, axie);
-            } else {
-              getAxieInfoMarketCB(axieId, ((anchor) => {
-                return function(axie) {
-                  if (!axie.fromCache) {
-                    canUseCallback = false;
-                  }
-                  renderCard(anchor, axie);
-                };
-              })(anc));
-            }
-          } else {
-            getAxieInfoMarketCB(axieId, ((anchor) => {
-              return function(axie) {
-                if (!axie.fromCache) {
-                  canUseCallback = false;
-                }
-                renderCard(anchor, axie);
-              };
-            })(anc));
-          }
-        } else {
-          axie = axies[axieId];
-          renderCard(anc, axie);
-        }
-
+        getAxieInfoMarketCB(axieId, ((anchor) => {
+          return function(axie) {
+            renderCard(anchor, axie);
+          };
+        })(anc), ((anchor) => {
+          return function(axie, matron, sire) {
+            //console.log(matron, sire);
+            renderEggCard(anchor, matron, sire);
+          };
+        })(anc));
       }
     }
   } catch (e) {
