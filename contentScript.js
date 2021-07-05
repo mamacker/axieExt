@@ -871,13 +871,13 @@ function renderCard(anc, axie) {
         hoursToBirth = Math.floor(minutesToBirth / 60);
         if (minutesToBirth <= 60) {
           if (minutesToBirth < 0) {
-            breedHolder[1].textContent = "Ready to hatch!";
+            breedHolder[1].textContent = "Hatch: Ready!";
             genMorphDiv(axie);
           } else {
-            breedHolder[1].textContent = "Minutes to hatch: " + minutesToBirth;
+            breedHolder[1].textContent = "Hatch: " + minutesToBirth + " min";
           }
         } else {
-          breedHolder[1].textContent = "Hours to hatch: " + hoursToBirth;
+          breedHolder[1].textContent = "Hatch: " + hoursToBirth + " hrs";
         }
 
         if (breedHolder[1].getAttribute("eggDetails")) {
