@@ -748,8 +748,12 @@ function renderCard(anc, axie) {
 
 
     breedHolder[1].classList.add("smalldetails");
-    breedHolder[1].style.color = "white";
-
+    if (options.axieEx_minimal) {
+      breedHolder[1].style.color = "light-grey";
+    } else {
+      breedHolder[1].style.color = "white";
+    }
+	  
     let stats = "";
     if (axie.stats && axie.stats.hp) {
       stats = "H:" + axie.stats.hp + " S:" + axie.stats.speed + " M:" + axie.stats.morale + " P:" + purity + "%"+ " S:" + secondary + "%";
