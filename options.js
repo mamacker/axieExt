@@ -2,6 +2,7 @@ const ENABLE_OPTION = "axieEx_enabled";
 const MINIMAL_OPTION = "axieEx_minimal";
 const SHOW_BREEDS_STATS_OPTION = "axieEx_breedsStats";
 const SHOW_EGG_PARENTS = "axieEx_eggParents";
+const SHOW_AUCTION = "axieEx_auction";
 
 function putOption(key, value) {
     let persist = {};
@@ -20,6 +21,7 @@ function getOptions(callback) {
         ENABLE_OPTION, 
         MINIMAL_OPTION, 
         SHOW_EGG_PARENTS,
+        SHOW_AUCTION,
         SHOW_BREEDS_STATS_OPTION], callback);
 }
 
@@ -34,6 +36,7 @@ function resetOptions() {
     defaultOptions[MINIMAL_OPTION] = false;
     defaultOptions[SHOW_BREEDS_STATS_OPTION] = true;
     defaultOptions[SHOW_EGG_PARENTS] = true;
+    defaultOptions[SHOW_AUCTION] = true;
     putOptions(defaultOptions);
     return defaultOptions;
 }

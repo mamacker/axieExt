@@ -3,6 +3,7 @@ const optionsMapping = {
     enableOption: ENABLE_OPTION, 
     minimalOption: MINIMAL_OPTION, 
     showBreedsStats: SHOW_BREEDS_STATS_OPTION,
+    showAuction: SHOW_AUCTION,
     eggParentOption: SHOW_EGG_PARENTS};
 
 $(document).ready(function(){

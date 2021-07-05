@@ -826,7 +826,7 @@ function renderCard(anc, axie) {
       content.className = content.className.replace("invisible", "visible");
     }
 
-    if (axie.auction) {
+    if (axie.auction && options.axieEx_auction) {
       let auctionHolder = breedHolder[1].cloneNode(true);
       auctionHolder.style.textAlign="center";
       auctionHolder.classList.add("auctionBucket");
@@ -1288,6 +1288,7 @@ getOptions((response) => {
     options[SHOW_BREEDS_STATS_OPTION] = response[SHOW_BREEDS_STATS_OPTION];
     options[MINIMAL_OPTION] = response[MINIMAL_OPTION];
     options[SHOW_EGG_PARENTS] = response[SHOW_EGG_PARENTS];
+    options[SHOW_AUCTION] = response[SHOW_AUCTION];
     if (options[ENABLE_OPTION]) {
         init();
         intID = setInterval(run, 1000);
