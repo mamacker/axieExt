@@ -449,93 +449,6 @@ function getAxieInfoMarketCB(id, cb, renderEggDetails) {
   }
 }
 
-async function getAxieBriefList() {
-    debugLog("getAxieBriefList");
-    let sort = "PriceAsc";
-    let auctionType = "Sale";
-    let address = null; //if marketplace page. default
-    //if self profile page
-    if (window.location.href.startsWith("https://marketplace.axieinfinity.com/profile/inventory/axie")) {
-        address = await getAccountFromProfile();
-        sort = "IdDesc";
-        auctionType = "All";
-    } else if (window.location.href.startsWith("https://marketplace.axieinfinity.com/profile/ronin:")) { // || window.location.href.startsWith("https://marketplace.axieinfinity.com/profile/0x")) {
-        address = getAccount();
-        sort = "IdDesc";
-        auctionType = "All";
-    }
-debugLog("Account: " + address);
-    let page = 1;
-    let p = getQueryParameters("page");
-    if (p.length > 0) {
-        page = parseInt(p[0]);  //assume only 1 page
-    }
-
-    let s = getQueryParameters("sort");
-    if (s.length > 0) {
-        sort = s[0];
-    }
-    let a = getQueryParameters("auctionType");
-    if (a.length > 0) {
-        auctionType = a[0];
-    }
-
-    let criteria = {"region":null,"parts":null,"bodyShapes":null,"classes":null,"stages":null,"numMystic":null,"pureness":null,"title":null,"breedCount":null,"hp":[],"skill":[],"speed":[],"morale":[]}; //"breedable":null,
-    for (let sIdx=0; sIdx < SEARCH_PARAMS.length; sIdx++) {
-        let option = SEARCH_PARAMS[sIdx];
-        let opts = getQueryParameters(option);
-        if (opts.length > 0) {
-            if ("region" == option) {
-                criteria.region = opts[0];
-                continue;
-            }
-            let opt = [];
-            if (["stage", "breedCount", "mystic", "pureness", "hp", "speed", "skill", "morale"].indexOf(option) != -1) {
-                for (let i=0; i < opts.length; i++) {
-                    opt.push(parseInt(opts[i]));
-                }
-            } else {
-                for (let i=0; i < opts.length; i++) {
-                    if ("title" == option) {
-                        opt.push(opts[i].replace(/-/g, " "));
-                    } else {
-                        opt.push(opts[i]);
-                    }
-                }
-            }
-            if (option in OPTIONS_MAP) {
-                criteria[OPTIONS_MAP[option]] = opt;
-            } else {
-                criteria[option] = opt;
-            }
-        }
-    }
-
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage({contentScriptQuery: "getAxieBriefList", address: address, page: page, sort: sort, auctionType: auctionType, criteria: criteria}, function(results) {
-        for (let i=0; i < results.length; i++) {
-          let axie = results[i];
-          let id = axie.id;
-          debugLog("got axie " + id);
-          if (!axies[id]) {
-            axies[id] = axie;
-
-            if (axie.stage > 2) {
-              axies[id].genes = genesToBin(BigInt(axies[id].genes));
-              let traits = getTraits(axies[id].genes);
-              let qp = getQualityAndPureness(traits, axies[id].class.toLowerCase(), false);
-              axies[id].traits = traits;
-              axies[id].quality = qp.quality;
-              axies[id].pureness = qp.pureness;
-              axies[id].secondary = qp.secondary;
-            }
-          }
-        }
-        resolve(results);
-      });
-    });
-}
-
 function appendTrait(table, trait) {
     let row = document.createElement("tr");
     let mystic = trait["mystic"];
@@ -768,6 +681,12 @@ function insertAfter(newNode, referenceNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
+function checkSetHatchTime(elem, text) {
+  if (!options.axieEx_minimal) {
+	  elem.textContent = text;
+  }
+}
+
 function renderCard(anc, axie) {
   if (!anc || !anc.firstElementChild || !anc.firstElementChild.firstElementChild) {
     return;
@@ -854,34 +773,35 @@ function renderCard(anc, axie) {
     } else if (axie.stage < 3) {
       birthTime = new Date((axie.birthDate * 1000) + (5*86400000));
       timeToBirth = birthTime.getTime() - new Date().getTime();
-      timeToHatch = (new Date((axie.birthDate * 1000) + (5*86400000)) + "").replace(/GMT.*/,"").replace(/202\d.*/,"");
-
+      timeToHatch = (new Date((axie.birthDate * 1000) + (5*86400000)) + "").replace(/GMT.*/,"");
 
       var timerCheck;
-      if (options.axieEx_minimal) {
+      if (options.axieEx_minimal && isProfilePage()) {
         timerCheck = 1;
         breedHolder[1].textContent = timeToHatch;
       } else {
         timerCheck = 86400000;
+		    timeToHatch = timeToHatch.replace(/202\d.*/,"");
         breedHolder[1].textContent = "Hatch: " + timeToHatch;
       }
+
       if (timeToBirth < timerCheck) {
         //console.log(timeToBirth);
         minutesToBirth = Math.floor(timeToBirth/1000/60);
         hoursToBirth = Math.floor(minutesToBirth / 60);
+
         if (minutesToBirth <= 60) {
           if (minutesToBirth < 0) {
-            breedHolder[1].textContent = "Hatch: Ready!";
+            checkSetHatchTime(breedHolder[1],"Hatch: Ready!");
             genMorphDiv(axie);
           } else {
-            breedHolder[1].textContent = "Hatch: " + minutesToBirth + " min";
+            checkSetHatchTime(breedHolder[1],"Hatch: " + minutesToBirth + " Min");
           }
         } else {
-          breedHolder[1].textContent = "Hatch: " + hoursToBirth + " hrs";
+          checkSetHatchTime(breedHolder[1],"Hatch: " + hoursToBirth + " Hrs");
         }
 
         if (breedHolder[1].getAttribute("eggDetails")) {
-          console.log("Has egg details.");
           breedHolder[1].textContent = breedHolder[1].textContent + breedHolder[1].getAttribute("eggDetails");
         }
 
@@ -1187,6 +1107,11 @@ function drop(ev) {
   }
 }
 
+function isProfilePage() {
+  let pageUrl = document.location.href + "";
+  return pageUrl.match(/profile/);
+}
+
 async function run() {
   debugLog("run");
   let dbg;
@@ -1310,7 +1235,6 @@ TODO: add support for breeding window
         if (!(axieId in axies)) {
           //get all axies on the page and break
           debugLog("getting axies");
-          //var results = await getAxieBriefList();
           var results = await getAxieInfoMarketCB(axieId);
           debugLog(axies);
           break;
@@ -1333,7 +1257,9 @@ TODO: add support for breeding window
         })(anc), ((anchor) => {
           return function(axie, matron, sire) {
             //console.log(matron, sire);
-            renderEggCard(anchor, matron, sire);
+            if (!(options.axieEx_minimal && isProfilePage())) {
+              renderEggCard(anchor, matron, sire);
+            }
           };
         })(anc));
       }
