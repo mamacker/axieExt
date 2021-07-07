@@ -1188,7 +1188,14 @@ TODO: add support for breeding window
         pathNode = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
         //console.log(pathNode);
         detailsNode = pathNode;
+
+		if (!detailsNode) {
+		  setTimeout(run, 1000);
+		  return;
+		}
+
         let traits = genGenesDiv(axie, detailsNode, "details");
+
         if (detailsNode.childElementCount == 0 && currentURL.startsWith("https://marketplace.axieinfinity.com/axie/")) {
           detailsNode.appendChild(traits);
         } else if (!currentURL.startsWith("https://marketplace.axieinfinity.com/axie/")) {
