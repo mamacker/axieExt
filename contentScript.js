@@ -1189,11 +1189,11 @@ TODO: add support for breeding window
         //console.log(pathNode);
         detailsNode = pathNode;
 
-		if (!detailsNode) {
-		  console.log("No stats... trying again in a while.");
-		  setTimeout(run, 1000);
-		  return;
-		}
+        if (!detailsNode) {
+          console.log("No stats... trying again in a while.");
+          setTimeout(run, 1000);
+          return;
+        }
 
         let traits = genGenesDiv(axie, detailsNode, "details");
 
@@ -1211,21 +1211,24 @@ TODO: add support for breeding window
             hostNode = hostNode.parentElement;
             if (hostNode) {
               hostNode = hostNode.parentElement;
-              if (hostNode) { 
-                let traits2 = genGenesDiv(axie, null, "details");
-                traits2.style["font-weight"] = "bold";
+              if (hostNode) {
+                if (document.getElementById("PageGeneDetails") == null) {
+                  let traits2 = genGenesDiv(axie, null, "details");
+                  traits.id = "PageGeneDetails";
+                  traits2.style["font-weight"] = "bold";
 
-                hostNode.appendChild(traits2);
-                //console.log(traits2.firstChild.firstChild)
-				let dataDiv = document.createElement("td");
-                let purity = Math.round(axie.quality * 100);
-                let secondary = Math.round(axie.secondary * 100);
-                dataDiv.textContent = "P: " + purity + "% S: " + secondary + "%";
-				dataDiv.style.paddingRight = "10px";
-                traits2.firstChild.firstChild.appendChild(dataDiv);
+                  hostNode.appendChild(traits2);
+                  //console.log(traits2.firstChild.firstChild)
+                  let dataDiv = document.createElement("td");
+                  let purity = Math.round(axie.quality * 100);
+                  let secondary = Math.round(axie.secondary * 100);
+                  dataDiv.textContent = "P: " + purity + "% S: " + secondary + "%";
+                  dataDiv.style.paddingRight = "10px";
+                  traits2.firstChild.firstChild.appendChild(dataDiv);
 
-                let marketLink = buildSearchLink(axie);
-                traits2.firstChild.children[1].appendChild(marketLink);
+                  let marketLink = buildSearchLink(axie);
+                  traits2.firstChild.children[1].appendChild(marketLink);
+                }
               }
             }
           }
