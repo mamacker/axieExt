@@ -1190,6 +1190,7 @@ TODO: add support for breeding window
         detailsNode = pathNode;
 
 		if (!detailsNode) {
+		  console.log("No stats... trying again in a while.");
 		  setTimeout(run, 1000);
 		  return;
 		}
