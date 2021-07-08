@@ -756,7 +756,8 @@ function renderCard(anc, axie) {
 	  
     let stats = "";
     if (axie.stats && axie.stats.hp) {
-      stats = "H:" + axie.stats.hp + " S:" + axie.stats.speed + " M:" + axie.stats.morale + " P:" + purity + "%"+ " S:" + secondary + "%";
+      stats = "H:" + axie.stats.hp + " S:" + axie.stats.speed + " M:" + axie.stats.morale + " P:" + purity + "%";
+	  if (purity != 100) { stats += " S:" + secondary + "%";}
       if (options.axieEx_minimal) {
         stats = "H:" + axie.stats.hp + " S:" + axie.stats.speed + " S:" + axie.stats.skill + " M:" + axie.stats.morale + " P:" + secondary + "%";
       }
