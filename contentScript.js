@@ -1205,14 +1205,14 @@ TODO: add support for breeding window
         }
 
         let canvasNodes = document.getElementsByTagName("canvas");
-        if (canvasNodes && canvasNodes.length > 0) {
+        if (canvasNodes && canvasNodes.length > 0 && canvasNodes.length < 2) {
           let canvasNode = canvasNodes[0];
           let hostNode = canvasNode.parentElement;
           if (hostNode) {
             hostNode = hostNode.parentElement;
             if (hostNode) {
               hostNode = hostNode.parentElement;
-              if (hostNode) {
+              if (hostNode && !(hostNode.style + "").match("transform")) {
                 if (document.getElementById("PageGeneDetails") == null) {
                   let traits2 = genGenesDiv(axie, null, "details");
                   traits.id = "PageGeneDetails";
