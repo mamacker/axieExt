@@ -905,6 +905,7 @@ function buildSearchLink(axie) {
     `&part=${axie.traits.mouth.d.partId}&part=${axie.traits.horn.d.partId}&part=${axie.traits.tail.d.partId}` +
     `&breedCount=${axie.breedCount}&breedCount=${axie.breedCount}`;
   marketH.alt = "See more like this...";
+  marketH.target = "_blank";
   marketH.addEventListener("click", (e) => {
     e.stopPropagation();
   });
