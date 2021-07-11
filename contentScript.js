@@ -775,6 +775,7 @@ function renderCard(anc, axie) {
         }
       });
       statsDiv.textContent = "🍆" + breedCount + " " + stats;
+      statsDiv.title = "H - health, S - speed, M - morale, S - Skill, P% - Purity,   S% - Secondary Purity";
     } else if (axie.stage < 3) {
       birthTime = new Date((axie.birthDate * 1000) + (5*86400000));
       timeToBirth = birthTime.getTime() - new Date().getTime();
@@ -886,6 +887,7 @@ function renderEggCard(anc, matron, sire, attempt) {
       let sireQuality = Math.floor(sire.quality * 100);
       smallDetail.textContent = smallDetail.textContent + " - M: " + matronQuality + "% S: " + sireQuality + "%";
       smallDetail.setAttribute("eggDetails"," - M: " + matronQuality + "% S: " + sireQuality + "%");
+      smallDetail.title = "M is matron quality, and S is Sire quality."
       if (matronQuality > 97 && sireQuality > 97) {
         smallDetail.style.color = "green";
       }   
