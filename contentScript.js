@@ -405,6 +405,21 @@ function invalidateAxieInfoMarketCB(id, cb) {
   }
 }
 
+function buggedAxieInfoMarketCB(id, price, cb) {
+  debugLog("buggedAxieInfoMarket", id);
+  try {
+    chrome.runtime.sendMessage({contentScriptQuery: "buggedAxieInfoMarket", axieId: id, price: price}, function(result) {
+      console.log("From bugged fetch: ", id, result);
+      axies[id].bugged = result.bugged;
+      axies[id].bugged_price = result.bugged_price;
+      if (cb) {
+        cb(result);
+      }
+    });
+  } catch(ex) {
+  }
+}
+
 function getParentAxieDataCB(id, context, matron, sire, cb) {
   debugLog("getParentAxieData", id);
   getAxieInfoMarketCB(matron, function(matronResult) {
@@ -734,6 +749,21 @@ function renderCard(anc, axie) {
         imgHolder.style["background-position-y"] = "0px";
         imgHolder.style["background-size"] = "10%";
         imgHolder.style["background-repeat"] = "no-repeat";
+      }
+    }
+
+    if (!options.axieEx_minimal) {
+      if (axie.bugged) {
+        let h5s = anc.getElementsByTagName("h5");
+        if (h5s.length == 1) {
+          let priceDetails = h5s[0].textContent;
+          let priceParts = priceDetails.split(/\s+/);
+          if (priceParts.length > 1) {
+            if ((priceParts[1] + 0) <= axie.bugged_price) {
+              h5s[0].textContent += "🐞";
+            }
+          }
+        }      
       }
     }
 
@@ -1115,6 +1145,27 @@ function drop(ev) {
   }
 }
 
+function checkIsBugged(id) {
+  if (isAxiePage()) {
+    if (document.getElementsByClassName("text-warning-4").length > 0) {
+      if (document.getElementsByTagName("h3").length == 1) {
+        let priceDetails = document.getElementsByTagName("h3")[0].textContent;
+        let priceParts = priceDetails.split(/\s+/);
+        if (priceParts.length > 1) {
+          buggedAxieInfoMarketCB(id, priceParts[1]);
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+function isAxiePage() {
+  let pageUrl = document.location.href + "";
+  return pageUrl.match(/axie.\d+/);
+}
+
 function isProfilePage() {
   let pageUrl = document.location.href + "";
   return pageUrl.match(/profile/);
@@ -1178,9 +1229,11 @@ TODO: add support for breeding window
       axie = await getAxieInfoMarket(axieId);
 
       if (axie && axie.id) {
-        invalidateAxieInfoMarketCB(axie.id, () => {
-          clearUpdateDiv();
-        });
+        if (checkIsBugged(axie.id) == false) {
+          invalidateAxieInfoMarketCB(axie.id, () => {
+            clearUpdateDiv();
+          });
+        }
       }
 
       if (axie.stage > 2) {

@@ -81,6 +81,29 @@ function invalidateAxieInfoMarket(id, sendResponse) {
     });
 }
 
+function buggedAxieInfoMarket(id, price, sendResponse) {
+  fetch("https://api.axie.technology/bugged/" + parseInt(id) + "/" + price, {"headers":{"content-type":"application/json"},"method":"GET"})
+  	.then(response => {
+        response.json().then(result => {
+		    console.log("Axie bugged result: ", result);
+			if (!result) {
+			  throw "Bad axie service result.";
+			}
+            let axie = result;
+            sendResponse(axie);
+        }).catch(error => {
+		  console.log(error);
+		  console.log("Trying again in one second...");
+		  setTimeout(() => { buggedAxieInfoMarket(id, sendResponse); }, 1300);
+		});
+    })
+    .catch(error => {
+        console.log(error);
+	    console.log("Trying again in one second...");
+	  	setTimeout(() => { buggedAxieInfoMarket(id, sendResponse); }, 1300);
+    });
+}
+
 function getAxieBriefList(address, page, sort, auctionType, criteria, sendResponse) {
     //Assume we are at 24 axies per page
     if (page < 1) page = 1;
@@ -116,6 +139,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
     if (request.contentScriptQuery == "getAxieBriefList") {
         getAxieBriefList(request.address, request.page, request.sort, request.auctionType, request.criteria, sendResponse);
+        return true;
+    }
+    if (request.contentScriptQuery == "buggedAxieInfoMarket") {
+        buggedAxieInfoMarket(request.axieId, request.price, sendResponse);
         return true;
     }
 });
