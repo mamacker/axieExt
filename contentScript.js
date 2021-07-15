@@ -761,6 +761,7 @@ function renderCard(anc, axie) {
           if (priceParts.length > 1) {
             if ((priceParts[1] + 0) <= axie.bugged_price) {
               h5s[0].textContent += "🐞";
+              h5s[0].title = "This axie has an issue.";
             }
           }
         }      
