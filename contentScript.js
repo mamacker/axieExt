@@ -483,7 +483,18 @@ function appendTrait(table, trait) {
         row.appendChild(data);
     }
     table.appendChild(row);
+}
 
+function appendRow(table, text) {
+    let row = document.createElement("tr");
+    let data = document.createElement("td");
+    let span = document.createElement("span");
+    span.textContent = text;
+    data.colSpan = 2;
+    data.style["padding-right"] = "5px";
+    data.appendChild(span);
+    row.appendChild(data);
+    table.appendChild(row);
 }
 
 function genGenesDiv(axie, mouseOverNode, type="list") {
@@ -496,6 +507,11 @@ function genGenesDiv(axie, mouseOverNode, type="list") {
   appendTrait(table, axie.traits.horn);
   appendTrait(table, axie.traits.back);
   appendTrait(table, axie.traits.tail);
+
+  if (mouseOverNode == null) {
+    appendRow(table, "Body Type: " + axie.bodyShape);
+  }
+
   traits.appendChild(table);
   if (mouseOverNode) {
     traits.style.display = "none";
