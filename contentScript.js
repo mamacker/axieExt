@@ -497,7 +497,7 @@ function appendRow(table, text) {
     table.appendChild(row);
 }
 
-function genGenesDiv(axie, mouseOverNode, type="list") {
+function genGenesDiv(axie, mouseOverNode, type="list", showBody=false) {
   let traits = document.createElement("div");
   let table = document.createElement("table");
   appendTrait(table, {d: {name: "D"}, r1: {name: "R1"}, r2: {name: "R2"}});
@@ -508,7 +508,7 @@ function genGenesDiv(axie, mouseOverNode, type="list") {
   appendTrait(table, axie.traits.back);
   appendTrait(table, axie.traits.tail);
 
-  if (mouseOverNode == null) {
+  if (showBody) {
     appendRow(table, "Body Type: " + axie.bodyShape);
   }
 
@@ -1269,7 +1269,7 @@ TODO: add support for breeding window
           return;
         }
 
-        let traits = genGenesDiv(axie, detailsNode, "details");
+        let traits = genGenesDiv(axie, detailsNode, "details", true);
 
         if (detailsNode.childElementCount == 0 && currentURL.startsWith("https://marketplace.axieinfinity.com/axie/")) {
           detailsNode.appendChild(traits);
@@ -1287,7 +1287,7 @@ TODO: add support for breeding window
               hostNode = hostNode.parentElement;
               if (hostNode && !(hostNode.style + "").match("transform")) {
                 if (document.getElementById("PageGeneDetails") == null) {
-                  let traits2 = genGenesDiv(axie, null, "details");
+                  let traits2 = genGenesDiv(axie, null, "details", true);
                   traits.id = "PageGeneDetails";
                   traits2.style["font-weight"] = "bold";
 
