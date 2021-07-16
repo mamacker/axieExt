@@ -1261,6 +1261,8 @@ function postAxie(ev) {
 	  if (itemDiv.style.opacity < .2) {
 		itemDiv.remove();
 		clearInterval(intval);
+		let axieId = itemDiv.getAttribute("href").replace(/.*axie.(\d+)/,"$1");
+		window.open(options[POST_ADDRESS].replace(/{axieid}/, axieId));
 	  }
 	}, 100);
   }, 100);

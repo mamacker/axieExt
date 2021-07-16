@@ -45,7 +45,7 @@ function resetOptions() {
     defaultOptions[SHOW_AUCTION] = true;
     defaultOptions[FIRE_THRESHOLD] = 97;
     defaultOptions[USE_POST] = false;
-    defaultOptions[POST_ADDRESS] = "http://localhost:55555/{axieid}";
+    defaultOptions[POST_ADDRESS] = "https://www.chillaxie.com/inspector/{axieid}?"
     putOptions(defaultOptions);
     return defaultOptions;
 }
