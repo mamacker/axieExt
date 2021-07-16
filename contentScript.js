@@ -1001,11 +1001,34 @@ function setupCart() {
   }
 }
 
+function setupAxiePost() {
+  if (!document.getElementById("postdropzone")) {
+	let targetDiv = document.createElement("div");
+
+	targetDiv.style["height"] = "300px";
+	targetDiv.style["width"] = "30px";
+	targetDiv.style["overflow-y"] = "auto";
+	targetDiv.id = "postdropzone";
+	targetDiv.style.position = "absolute";
+	targetDiv.style.top = "500px";
+	targetDiv.style.right = "0px";
+
+	document.body.appendChild(targetDiv);
+
+	targetDiv.addEventListener("drop", postAxie);
+	targetDiv.addEventListener("dragover", allowDrop);
+	targetDiv.addEventListener("dragleave", dragLeave);
+	targetDiv.classList.add("dragtarget");
+  }
+}
 
 function allowDrop(ev) {
     //console.log("allowDrop")
   ev.preventDefault();
   if (ev.target.id == "cartdropzone") {
+  	ev.target.style.border = "3px solid green";
+  }
+  if (ev.target.id == "postdropzone") {
   	ev.target.style.border = "3px solid green";
   }
 }
@@ -1162,6 +1185,87 @@ function drop(ev) {
   }
 }
 
+function postAxie(ev) {
+  ev.preventDefault();
+  ev.target.style.border = "";
+  let target = ev.target;
+  console.log("Posting axie:", ev);
+  var data = ev.dataTransfer.getData("text/plain");
+
+  let itemDiv = document.createElement("div");
+  itemDiv.style.maxWidth = "193px";
+  itemDiv.classList.add(...("border border-gray-3 bg-gray-4 rounded transition hover:shadow hover:border-gray-6".split(" ")));
+  itemDiv.classList.add("cartaxie");
+  itemDiv.style.maxHeight = "116px";
+  itemDiv.setAttribute("href", data);
+  itemDiv.style.position = "relative";
+  itemDiv.addEventListener("click", ((item) => {
+	return (e) => {
+	  e.preventDefault();
+	  window.open(item.getAttribute("href"));
+	};
+  })(itemDiv));
+
+  let closeButton = document.createElement("div");
+  closeButton.style.position = "absolute";
+  closeButton.style.top = "-2px";
+  closeButton.style.right = "3px";
+  closeButton.style.cursor = "pointer";
+  closeButton.textContent = "X"
+  closeButton.style.fontWeight = "bold";
+  closeButton.style.fontSize = "20px";
+  itemDiv.appendChild(closeButton);
+
+  closeButton.addEventListener("click", ((item) => {
+	return (e) => {
+	  e.preventDefault();
+	  e.stopPropagation();
+	  item.remove();
+	};
+  })(itemDiv));
+
+  let sourceCard = document.getElementById(data);
+
+  let dataDivs = sourceCard.getElementsByClassName("flex-row");
+
+  if (target.firstChild) {
+	target.insertBefore(itemDiv, target.firstChild);
+  } else {
+	target.append(itemDiv);
+  }
+
+  for (let rowCt = dataDivs.length -1; rowCt > -1 ; rowCt--) {
+	let row = dataDivs[rowCt].cloneNode(true);
+	row.style.maxHeight = "100px";
+	row.style.fontSize = "var(--font-size-14);"
+	row.classList.add("justify-center");
+	for (let i = 0; i < row.children.length; i++) {
+	  row.children[i].classList.remove("md:text-20");
+	}
+	row.classList.remove("font-medium");
+	itemDiv.appendChild(row);
+  }
+
+  let sourceImg = sourceCard.getElementsByTagName("img")[0].parentElement.cloneNode(true)
+  sourceImg.style.maxHeight = "100px";
+  sourceImg.style.overflow = "hidden";
+  sourceImg.firstChild.style.maxHeight = "100px";
+  sourceImg.firstChild.style.position = "relative";
+  sourceImg.firstChild.style.top = "-21px";
+  itemDiv.appendChild(sourceImg);
+
+  setTimeout(() => {
+	itemDiv.style.opacity = 1;
+	let intval = setInterval(() => {
+	  itemDiv.style.opacity = itemDiv.style.opacity - .1;
+	  if (itemDiv.style.opacity < .2) {
+		itemDiv.remove();
+		clearInterval(intval);
+	  }
+	}, 100);
+  }, 100);
+}
+
 function checkIsBugged(id) {
   if (isAxiePage()) {
     if (document.getElementsByClassName("text-warning-4").length > 0) {
@@ -1199,6 +1303,9 @@ async function run() {
       intID = -1;
       notReadyCount = 0;
       setupCart();
+	  if (options[USE_POST]) {
+	  	setupAxiePost();
+	  }
       debugLog("run ready");
     } else {
       notReadyCount++;
@@ -1375,6 +1482,8 @@ getOptions((response) => {
     options[SHOW_EGG_PARENTS] = response[SHOW_EGG_PARENTS];
     options[SHOW_AUCTION] = response[SHOW_AUCTION];
     options[FIRE_THRESHOLD] = response[FIRE_THRESHOLD] - 0;
+    options[USE_POST] = response[USE_POST];
+    options[POST_ADDRESS] = response[POST_ADDRESS];
     if (options[ENABLE_OPTION]) {
         init();
         intID = setInterval(run, 1000);

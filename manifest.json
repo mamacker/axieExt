@@ -20,7 +20,7 @@
         }
     },
     "background": {
-      "scripts": ["options.js", "lib/web3.min.js", "background.js"],
+      "scripts": ["options.js", "background.js"],
       "persistent": false
     },
     "content_scripts": [

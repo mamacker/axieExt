@@ -5,11 +5,14 @@ const optionsMapping = {
     showBreedsStats: SHOW_BREEDS_STATS_OPTION,
     showAuction: SHOW_AUCTION,
     eggParentOption: SHOW_EGG_PARENTS,
+    usePost: USE_POST,
+    postAddress: POST_ADDRESS,
     fireThreshold: FIRE_THRESHOLD
 };
 
 const optionIsValue = {
-  fireThreshold: true
+  fireThreshold: true,
+  postAddress: true
 }
 
 $(document).ready(function(){
