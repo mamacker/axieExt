@@ -738,7 +738,7 @@ function renderCard(anc, axie) {
     let statsDiv = document.createElement("div");
     let purity = Math.round(axie.quality * 100);
     let secondary = Math.round(axie.secondary * 100);
-    if (!options.axieEx_minimal && ((purity >= 97 && purity < 100) || (secondary >= 97 && secondary < 100))) {
+    if (!options.axieEx_minimal && ((purity >= options.axieEx_fireThreshold && purity < 100) || (secondary >= options.axieEx_fireThreshold && secondary < 100))) {
       let imgHolder = anc.querySelector(".img-placeholder");
       imgHolder.style["background-image"] = "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/770159246796128258.png)";
       imgHolder.style["background-position-x"] = "122px";
@@ -1374,6 +1374,7 @@ getOptions((response) => {
     options[MINIMAL_OPTION] = response[MINIMAL_OPTION];
     options[SHOW_EGG_PARENTS] = response[SHOW_EGG_PARENTS];
     options[SHOW_AUCTION] = response[SHOW_AUCTION];
+    options[FIRE_THRESHOLD] = response[FIRE_THRESHOLD] - 0;
     if (options[ENABLE_OPTION]) {
         init();
         intID = setInterval(run, 1000);

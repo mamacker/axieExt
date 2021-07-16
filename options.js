@@ -3,6 +3,7 @@ const MINIMAL_OPTION = "axieEx_minimal";
 const SHOW_BREEDS_STATS_OPTION = "axieEx_breedsStats";
 const SHOW_EGG_PARENTS = "axieEx_eggParents";
 const SHOW_AUCTION = "axieEx_auction";
+const FIRE_THRESHOLD = "axieEx_fireThreshold";
 
 function putOption(key, value) {
     let persist = {};
@@ -22,6 +23,7 @@ function getOptions(callback) {
         MINIMAL_OPTION, 
         SHOW_EGG_PARENTS,
         SHOW_AUCTION,
+	  	FIRE_THRESHOLD,
         SHOW_BREEDS_STATS_OPTION], callback);
 }
 
@@ -37,6 +39,7 @@ function resetOptions() {
     defaultOptions[SHOW_BREEDS_STATS_OPTION] = true;
     defaultOptions[SHOW_EGG_PARENTS] = true;
     defaultOptions[SHOW_AUCTION] = true;
+    defaultOptions[FIRE_THRESHOLD] = 97;
     putOptions(defaultOptions);
     return defaultOptions;
 }
