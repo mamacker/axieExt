@@ -1372,13 +1372,40 @@ function buildShelfButtons() {
   }
 }
 
-function drop(ev) {
-  ev.preventDefault();
-  ev.target.style.border = "";
-  let target = ev.target;
-  if (target.id == "cartdropzone") {
-    var data = ev.dataTransfer.getData("text/plain");
+function getAxieIdFromHref(href) {
+  let axieId = href.replace(/.*axie.(\d+)/, "$1");
+  return axieId;
+}
 
+function addCartAxie(axieId) {
+  let cartAxies = [];
+  if (localStorage.cartAxies == null || localStorage.cartAxies == "") {
+    localStorage.cartAxies = JSON.stringify([]);
+  } else {
+    cartAxies = JSON.parse(localStorage.cartAxies);
+  }
+
+  cartAxies.unshift(axieId);
+  localStorage.cartAxies = JSON.stringify(cartAxies);
+}
+
+function removeCartAxie(axieId) {
+  let cartAxies = [];
+  if (localStorage.cartAxies == null || localStorage.cartAxies == "") {
+    localStorage.cartAxies = JSON.stringify([]);
+  } else {
+    cartAxies = JSON.parse(localStorage.cartAxies);
+  }
+
+  const index = cartAxies.indexOf(axieId);
+  if (index > -1) {
+    cartAxies.splice(index, 1);
+  }
+  localStorage.cartAxies = JSON.stringify(cartAxies);
+}
+
+function buildShelfAxie(axieId, href, cb) {
+  getAxieInfoMarketCB(axieId, (axieInfo) => {
     let itemDiv = document.createElement("div");
     itemDiv.style.maxWidth = "193px";
     itemDiv.classList.add(
@@ -1386,9 +1413,10 @@ function drop(ev) {
         " "
       )
     );
+
     itemDiv.classList.add("cartaxie");
     itemDiv.style.maxHeight = "116px";
-    itemDiv.setAttribute("href", data);
+    itemDiv.setAttribute("href", href);
     itemDiv.style.position = "relative";
     itemDiv.addEventListener(
       "click",
@@ -1417,43 +1445,60 @@ function drop(ev) {
           e.preventDefault();
           e.stopPropagation();
           item.remove();
+          removeCartAxie(axieId);
         };
       })(itemDiv)
     );
 
-    let sourceCard = document.getElementById(data);
-
-    let dataDivs = sourceCard.getElementsByClassName("flex-row");
-
-    if (target.firstChild) {
-      target.insertBefore(itemDiv, target.firstChild);
-    } else {
-      target.append(itemDiv);
+    if (cb) {
+      cb(itemDiv);
     }
+  });
+}
 
-    for (let rowCt = dataDivs.length - 1; rowCt > -1; rowCt--) {
-      let row = dataDivs[rowCt].cloneNode(true);
-      row.style.maxHeight = "100px";
-      row.style.fontSize = "var(--font-size-14);";
-      row.classList.add("justify-center");
-      for (let i = 0; i < row.children.length; i++) {
-        row.children[i].classList.remove("md:text-20");
+function drop(ev) {
+  ev.preventDefault();
+  ev.target.style.border = "";
+  let target = ev.target;
+  if (target.id == "cartdropzone") {
+    var data = ev.dataTransfer.getData("text/plain");
+    buildShelfAxie(getAxieIdFromHref(data), data, (itemDiv) => {
+      let sourceCard = document.getElementById(data);
+      let dataDivs = sourceCard.getElementsByClassName("flex-row");
+
+      if (target.firstChild) {
+        target.insertBefore(itemDiv, target.firstChild);
+      } else {
+        target.append(itemDiv);
       }
-      row.classList.remove("font-medium");
-      itemDiv.appendChild(row);
-    }
 
-    let sourceImg = sourceCard
-      .getElementsByTagName("img")[0]
-      .parentElement.cloneNode(true);
-    sourceImg.style.maxHeight = "100px";
-    sourceImg.style.overflow = "hidden";
-    sourceImg.firstChild.style.maxHeight = "100px";
-    sourceImg.firstChild.style.position = "relative";
-    sourceImg.firstChild.style.top = "-21px";
-    itemDiv.appendChild(sourceImg);
+      for (let rowCt = dataDivs.length - 1; rowCt > -1; rowCt--) {
+        let row = dataDivs[rowCt].cloneNode(true);
+        row.style.maxHeight = "100px";
+        row.style.fontSize = "var(--font-size-14);";
+        row.classList.add("justify-center");
+        for (let i = 0; i < row.children.length; i++) {
+          row.children[i].classList.remove("md:text-20");
+        }
+        row.classList.remove("font-medium");
+        itemDiv.appendChild(row);
+      }
 
-    buildShelfButtons();
+      let sourceImg = sourceCard
+        .getElementsByTagName("img")[1]
+        .parentElement.cloneNode(true);
+      sourceImg.style.maxHeight = "100px";
+      sourceImg.style.overflow = "hidden";
+      sourceImg.firstChild.style.maxHeight = "100px";
+      sourceImg.firstChild.style.position = "relative";
+      sourceImg.firstChild.style.top = "-21px";
+      itemDiv.appendChild(sourceImg);
+
+      let axieId = getAxieIdFromHref(itemDiv.getAttribute("href"));
+      addCartAxie(axieId);
+
+      buildShelfButtons();
+    });
   }
 }
 
@@ -1545,7 +1590,7 @@ function postAxie(ev) {
       if (itemDiv.style.opacity < 0.2) {
         itemDiv.remove();
         clearInterval(intval);
-        let axieId = itemDiv.getAttribute("href").replace(/.*axie.(\d+)/, "$1");
+        let axieId = getAxieIdFromHref(itemDiv.getAttribute("href"));
         window.open(options[POST_ADDRESS].replace(/{axieid}/, axieId));
       }
     }, 100);
@@ -1728,7 +1773,7 @@ async function run() {
         if (!(axieId in axies)) {
           //get all axies on the page and break
           debugLog("getting axies");
-          var results = await getAxieInfoMarketCB(axieId);
+          getAxieInfoMarketCB(axieId);
           debugLog(axies);
           break;
         }

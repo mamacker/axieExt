@@ -2,7 +2,7 @@
     "name": "Explorer's Freak Extension",
     "version": "1.5.1",
     "description": "An extension to help play Axie Infinity.",
-    "permissions": ["activeTab", "declarativeContent", "storage"],
+    "permissions": ["declarativeContent", "storage"],
     "icons": {
       "16": "images/rep_icon16.png",
       "32": "images/rep_icon32.png",
