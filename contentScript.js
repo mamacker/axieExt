@@ -9,6 +9,7 @@ const colorMap = {
   bird: "rgb(255, 139, 189)",
   bug: "rgb(255, 83, 65)",
 };
+
 const classGeneMap = {
   "0000": "beast",
   "0001": "bug",
@@ -16,10 +17,11 @@ const classGeneMap = {
   "0011": "plant",
   "0100": "aquatic",
   "0101": "reptile",
-  1000: "???",
-  1001: "???",
-  1010: "???",
+  1000: "mech",
+  1001: "dawn",
+  1010: "dusk",
 };
+
 const typeOrder = {
   patternColor: 1,
   eyes: 2,
@@ -231,13 +233,24 @@ async function getBodyParts() {
   let parts = await fetch(chrome.extension.getURL("body-parts.json")).then(
     (res) => res.json()
   );
+
   for (let i in parts) {
     bodyPartsMap[parts[i].partId] = parts[i];
   }
-  //    });
-  for (let i in parts) {
-    bodyPartsMap[parts[i].partId] = parts[i];
+}
+
+var svgsMap = null;
+async function getSVGs(cb) {
+  if (svgsMap) {
+    cb(svgsMap);
+    return;
   }
+
+  let svgs = await fetch(chrome.extension.getURL("svgs.json")).then((res) =>
+    res.json()
+  );
+
+  cb(svgs);
 }
 
 function addClass(classCt, className) {
@@ -999,14 +1012,19 @@ function renderCard(anc, axie) {
         axie.stats.hp +
         " S:" +
         axie.stats.speed +
+        " S:" +
+        axie.stats.skill +
         " M:" +
         axie.stats.morale +
         " P:" +
         purity +
-        "%";
-      if (purity != 100) {
-        stats += " S:" + secondary + "%";
+        "";
+      if (purity != 100 && secondary != purity) {
+        stats += " S:" + secondary + "";
+      } else {
+        stats += "%";
       }
+
       if (options.axieEx_minimal) {
         stats =
           "H:" +
@@ -1018,7 +1036,7 @@ function renderCard(anc, axie) {
           " M:" +
           axie.stats.morale +
           " P:" +
-          secondary +
+          purity +
           "%";
       }
     }
@@ -1034,10 +1052,17 @@ function renderCard(anc, axie) {
           //n.remove() doesn't work. probably because removing during iteration is not supported.
         }
       });
+
       statsDiv.textContent = "🍆" + breedCount + " " + stats;
-      if (!options.axieEx_minimal)
+      if (breedCount == 0 && !options.axieEx_minimal) {
+        statsDiv.textContent = "🥚" + " " + stats;
+      }
+
+      if (!options.axieEx_minimal) {
         statsDiv.title =
-          "H - health, S - speed, M - morale, S - Skill, P% - Purity,   S% - Secondary Purity";
+          breedCount +
+          " - Breeds, H - health, S - speed, S - Skill, M - morale, P% - Purity, S% - Secondary Purity";
+      }
     } else if (axie.stage < 3) {
       birthTime = new Date(axie.birthDate * 1000 + 5 * 86400000);
       timeToBirth = birthTime.getTime() - new Date().getTime();
@@ -1266,11 +1291,20 @@ function setupAxiePost() {
 
     targetDiv.style["height"] = "300px";
     targetDiv.style["width"] = "30px";
-    targetDiv.style["overflow-y"] = "auto";
+    targetDiv.style["overflow"] = "hidden";
     targetDiv.id = "postdropzone";
-    targetDiv.style.position = "absolute";
+    targetDiv.style.position = "fixed";
     targetDiv.style.top = "500px";
-    targetDiv.style.right = "0px";
+    targetDiv.style.right = "20px";
+    targetDiv.style.writingMode = "vertical-rl";
+    targetDiv.style.textOrientation = "sideways-right";
+    targetDiv.title = "Drag and drop two axies here to start the Breeding Sim.";
+
+    if (!options.axieEx_minimal) {
+      textClone = targetDiv.cloneNode();
+      textClone.innerText = "Breeding Simulator";
+      document.body.appendChild(textClone);
+    }
 
     document.body.appendChild(targetDiv);
 
@@ -1278,6 +1312,7 @@ function setupAxiePost() {
     targetDiv.addEventListener("dragover", allowDrop);
     targetDiv.addEventListener("dragleave", dragLeave);
     targetDiv.classList.add("dragtarget");
+    targetDiv.classList.add("hideme");
   }
 }
 
@@ -1308,6 +1343,8 @@ function dragend(ev) {
   for (target in targets) {
     if (targets[target] && targets[target].style) {
       targets[target].style.border = "";
+      if (targets[target].classList.contains("hideme")) {
+      }
     }
   }
 }
@@ -1404,20 +1441,22 @@ function removeCartAxie(axieId) {
   localStorage.cartAxies = JSON.stringify(cartAxies);
 }
 
-function buildShelfAxie(axieId, href, cb) {
+function buildShelfAxie(axieId, classname, href, cb) {
   getAxieInfoMarketCB(axieId, (axieInfo) => {
     let itemDiv = document.createElement("div");
-    itemDiv.style.maxWidth = "193px";
+    itemDiv.style.maxWidth = "130px";
     itemDiv.classList.add(
       ..."border border-gray-3 bg-gray-4 rounded transition hover:shadow hover:border-gray-6".split(
         " "
       )
     );
 
-    itemDiv.classList.add("cartaxie");
+    itemDiv.classList.add(classname);
     itemDiv.style.maxHeight = "116px";
     itemDiv.setAttribute("href", href);
+    itemDiv.setAttribute("axieid", axieId);
     itemDiv.style.position = "relative";
+    itemDiv.style.float = "left";
     itemDiv.addEventListener(
       "click",
       ((item) => {
@@ -1450,9 +1489,28 @@ function buildShelfAxie(axieId, href, cb) {
       })(itemDiv)
     );
 
-    if (cb) {
-      cb(itemDiv);
-    }
+    //Add in the axie name:
+    getSVGs((svgs) => {
+      let axieName = document.createElement("div");
+      axieName.innerHTML =
+        svgs[axies[axieId].traits.cls] + " " + axies[axieId].name;
+      itemDiv.appendChild(axieName);
+
+      let sourceImg = document.createElement("img");
+      sourceImg.src =
+        "https://storage.googleapis.com/assets.axieinfinity.com/axies/" +
+        axieId +
+        "/axie/axie-full-transparent.png";
+      sourceImg.style.maxHeight = "100px";
+      sourceImg.style.overflow = "hidden";
+      sourceImg.style.position = "relative";
+
+      itemDiv.appendChild(sourceImg);
+
+      if (cb) {
+        cb(itemDiv);
+      }
+    });
   });
 }
 
@@ -1462,37 +1520,12 @@ function drop(ev) {
   let target = ev.target;
   if (target.id == "cartdropzone") {
     var data = ev.dataTransfer.getData("text/plain");
-    buildShelfAxie(getAxieIdFromHref(data), data, (itemDiv) => {
-      let sourceCard = document.getElementById(data);
-      let dataDivs = sourceCard.getElementsByClassName("flex-row");
-
+    buildShelfAxie(getAxieIdFromHref(data), "cartaxie", data, (itemDiv) => {
       if (target.firstChild) {
         target.insertBefore(itemDiv, target.firstChild);
       } else {
         target.append(itemDiv);
       }
-
-      for (let rowCt = dataDivs.length - 1; rowCt > -1; rowCt--) {
-        let row = dataDivs[rowCt].cloneNode(true);
-        row.style.maxHeight = "100px";
-        row.style.fontSize = "var(--font-size-14);";
-        row.classList.add("justify-center");
-        for (let i = 0; i < row.children.length; i++) {
-          row.children[i].classList.remove("md:text-20");
-        }
-        row.classList.remove("font-medium");
-        itemDiv.appendChild(row);
-      }
-
-      let sourceImg = sourceCard
-        .getElementsByTagName("img")[1]
-        .parentElement.cloneNode(true);
-      sourceImg.style.maxHeight = "100px";
-      sourceImg.style.overflow = "hidden";
-      sourceImg.firstChild.style.maxHeight = "100px";
-      sourceImg.firstChild.style.position = "relative";
-      sourceImg.firstChild.style.top = "-21px";
-      itemDiv.appendChild(sourceImg);
 
       let axieId = getAxieIdFromHref(itemDiv.getAttribute("href"));
       addCartAxie(axieId);
@@ -1509,92 +1542,48 @@ function postAxie(ev) {
   console.log("Posting axie:", ev);
   var data = ev.dataTransfer.getData("text/plain");
 
-  let itemDiv = document.createElement("div");
-  itemDiv.style.maxWidth = "193px";
-  itemDiv.classList.add(
-    ..."border border-gray-3 bg-gray-4 rounded transition hover:shadow hover:border-gray-6".split(
-      " "
-    )
-  );
-  itemDiv.classList.add("cartaxie");
-  itemDiv.style.maxHeight = "116px";
-  itemDiv.setAttribute("href", data);
-  itemDiv.style.position = "relative";
-  itemDiv.addEventListener(
-    "click",
-    ((item) => {
-      return (e) => {
-        e.preventDefault();
-        window.open(item.getAttribute("href"));
-      };
-    })(itemDiv)
-  );
-
-  let closeButton = document.createElement("div");
-  closeButton.style.position = "absolute";
-  closeButton.style.top = "-2px";
-  closeButton.style.right = "3px";
-  closeButton.style.cursor = "pointer";
-  closeButton.textContent = "X";
-  closeButton.style.fontWeight = "bold";
-  closeButton.style.fontSize = "20px";
-  itemDiv.appendChild(closeButton);
-
-  closeButton.addEventListener(
-    "click",
-    ((item) => {
-      return (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        item.remove();
-      };
-    })(itemDiv)
-  );
-
-  let sourceCard = document.getElementById(data);
-
-  let dataDivs = sourceCard.getElementsByClassName("flex-row");
-
-  if (target.firstChild) {
-    target.insertBefore(itemDiv, target.firstChild);
-  } else {
-    target.append(itemDiv);
-  }
-
-  for (let rowCt = dataDivs.length - 1; rowCt > -1; rowCt--) {
-    let row = dataDivs[rowCt].cloneNode(true);
-    row.style.maxHeight = "100px";
-    row.style.fontSize = "var(--font-size-14);";
-    row.classList.add("justify-center");
-    for (let i = 0; i < row.children.length; i++) {
-      row.children[i].classList.remove("md:text-20");
+  buildShelfAxie(getAxieIdFromHref(data), "postaxie", data, (itemDiv) => {
+    if (target.firstChild) {
+      target.insertBefore(itemDiv, target.firstChild);
+    } else {
+      target.append(itemDiv);
     }
-    row.classList.remove("font-medium");
-    itemDiv.appendChild(row);
-  }
 
-  let sourceImg = sourceCard
-    .getElementsByTagName("img")[0]
-    .parentElement.cloneNode(true);
-  sourceImg.style.maxHeight = "100px";
-  sourceImg.style.overflow = "hidden";
-  sourceImg.firstChild.style.maxHeight = "100px";
-  sourceImg.firstChild.style.position = "relative";
-  sourceImg.firstChild.style.top = "-21px";
-  itemDiv.appendChild(sourceImg);
-
-  setTimeout(() => {
-    itemDiv.style.opacity = 1;
-    let intval = setInterval(() => {
-      itemDiv.style.opacity = itemDiv.style.opacity - 0.1;
-      if (itemDiv.style.opacity < 0.2) {
-        itemDiv.remove();
-        clearInterval(intval);
-        let axieId = getAxieIdFromHref(itemDiv.getAttribute("href"));
-        window.open(options[POST_ADDRESS].replace(/{axieid}/, axieId));
+    setTimeout(() => {
+      if (document.getElementsByClassName("postaxie").length > 1) {
+        let axieList = [];
+        for (
+          let pCt = 0;
+          pCt < document.getElementsByClassName("postaxie").length;
+          pCt++
+        ) {
+          let curItemDiv = document.getElementsByClassName("postaxie")[pCt];
+          axieList.push(curItemDiv.getAttribute("axieid"));
+          setTimeout(() => {
+            curItemDiv.style.opacity = 1;
+            let readygo = null;
+            let intval = setInterval(() => {
+              curItemDiv.style.opacity = curItemDiv.style.opacity - 0.1;
+              if (curItemDiv.style.opacity < 0.2) {
+                curItemDiv.remove();
+                clearInterval(intval);
+                //window.open(options[POST_ADDRESS].replace(/{axieid}/, axieId));
+                clearTimeout(readygo);
+                readygo = setTimeout(() => {
+                  window.open(
+                    options[POST_ADDRESS].replace(
+                      /{axieid}/,
+                      axieList[0]
+                    ).replace(/{axieid2}/, axieList[1])
+                  );
+                }, 10);
+              }
+            }, 100);
+          }, 100);
+        }
       }
-    }, 100);
-  }, 100);
+    }, 0);
+  });
 }
 
 function checkIsBugged(id) {

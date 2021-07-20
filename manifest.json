@@ -30,7 +30,8 @@
         }
     ],
     "web_accessible_resources": [
-      "body-parts.json"
+      "body-parts.json",
+      "svgs.json"
     ],
     "manifest_version": 2
 }
