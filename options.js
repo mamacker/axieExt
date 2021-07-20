@@ -50,7 +50,7 @@ function resetOptions() {
   defaultOptions[USE_POST] = false;
   //defaultOptions[POST_ADDRESS] = "https://www.chillaxie.com/inspector/{axieid}?"
   defaultOptions[POST_ADDRESS] =
-    "https://freakitties.github.io/axie/calc.html?sireId={axieid}&matronId={axieid2}";
+    "https://www.chillaxie.com/breeding-simulator?ids={axieid},{axieid2}";
   putOptions(defaultOptions);
   return defaultOptions;
 }
