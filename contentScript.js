@@ -1549,6 +1549,8 @@ function postAxie(ev) {
       target.append(itemDiv);
     }
 
+    let readygo = null;
+    let went = false;
     setTimeout(() => {
       if (document.getElementsByClassName("postaxie").length > 1) {
         let axieList = [];
@@ -1561,7 +1563,6 @@ function postAxie(ev) {
           axieList.push(curItemDiv.getAttribute("axieid"));
           setTimeout(() => {
             curItemDiv.style.opacity = 1;
-            let readygo = null;
             let intval = setInterval(() => {
               curItemDiv.style.opacity = curItemDiv.style.opacity - 0.1;
               if (curItemDiv.style.opacity < 0.2) {
@@ -1570,13 +1571,16 @@ function postAxie(ev) {
                 //window.open(options[POST_ADDRESS].replace(/{axieid}/, axieId));
                 clearTimeout(readygo);
                 readygo = setTimeout(() => {
+                  clearTimeout(readygo);
+                  if (went) return;
+                  went = true;
                   window.open(
                     options[POST_ADDRESS].replace(
                       /{axieid}/,
                       axieList[0]
                     ).replace(/{axieid2}/, axieList[1])
                   );
-                }, 10);
+                }, 100);
               }
             }, 100);
           }, 100);
