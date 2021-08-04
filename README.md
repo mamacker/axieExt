@@ -1,5 +1,9 @@
 A biggish update to Freak's Axie Extension for Chrome (and compatible browsers) - that allows for a cache of the Axie data and several usability elements.
 
+Installable from the Google Store at:
+
+https://chrome.google.com/webstore/detail/explorers-freak-extension/omgdahfemndocejpleigdkkapmikcnjl
+
 Features:
 <img src="/readme_images/look1.png">
 <img src="/readme_images/look2.png">
