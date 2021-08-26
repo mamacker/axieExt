@@ -1648,7 +1648,7 @@ async function run() {
         setupAxiePost();
       }
       debugLog("run ready");
-      console.log("Run time set.");
+      //console.log("Run time set.");
       lastRun = Date.now();
       lastUrlSeen = window.location.href + "";
     } else {
@@ -1676,7 +1676,7 @@ async function run() {
       if (
         currentURL.match(/https:\/\/marketplace\.axieinfinity\.com\/axie\/\d+/)
       ) {
-        console.log("Run time set.");
+        //console.log("Run time set.");
         lastRun = Date.now();
         lastUrlSeen = window.location.href + "";
         let axieId = parseInt(
