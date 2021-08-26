@@ -143,12 +143,22 @@ function loadComplete(mutationsList) {
       }
     }
   }
+  if (
+    window.location.href.startsWith(
+      "https://marketplace.axieinfinity.com/axie"
+    ) &&
+    document.getElementsByTagName("canvas").length > 0
+  ) {
+    debugLog("loadComplete true, canvas exists");
+    return true;
+  }
+
   debugLog("loadComplete false");
   return false;
 }
 
 async function init() {
-  debugLog("init");
+  //console.log("init");
   await getBodyParts();
 
   /*
@@ -171,7 +181,7 @@ async function init() {
         "https://marketplace.axieinfinity.com/axie"
       )
     ) {
-      debugLog("ignoring");
+      //console.log("Ignoring change.");
       return;
     }
 
@@ -202,13 +212,15 @@ async function init() {
             mutated.target.children[1].style["zIndex"] = 99998;
           }
         } catch (ex) {}
+      } else {
+        //console.log("Ignoring axie mutation.");
       }
     }
 
     if (window.location.href != currentURL) {
       currentURL = window.location.href;
       clearMorphDiv();
-      debugLog("New URI detected.");
+      //console.log("New URI detected.");
     }
 
     //Only call run() if we find certain conditions in the mutation list
@@ -218,6 +230,8 @@ async function init() {
         clearInterval(intID);
       }
       intID = setInterval(run, 1000);
+    } else {
+      //console.log("loadComplete false");
     }
   };
   observer = new MutationObserver(callback);
@@ -554,7 +568,7 @@ function invalidateAxieInfoMarketCB(id, cb) {
     chrome.runtime.sendMessage(
       { contentScriptQuery: "invalidateAxieInfoMarket", axieId: id },
       function (result) {
-        console.log("From fetch: ", result);
+        //console.log("From fetch: ", result);
         axies[id] = result;
         if (result && result["stage"] && result.stage > 2) {
           axies[id].genes = genesToBin(BigInt(axies[id].genes));
@@ -1538,6 +1552,7 @@ function drop(ev) {
 function postAxie(ev) {
   ev.preventDefault();
   ev.target.style.border = "";
+
   let target = ev.target;
   console.log("Posting axie:", ev);
   var data = ev.dataTransfer.getData("text/plain");
@@ -1568,7 +1583,6 @@ function postAxie(ev) {
               if (curItemDiv.style.opacity < 0.2) {
                 curItemDiv.remove();
                 clearInterval(intval);
-                //window.open(options[POST_ADDRESS].replace(/{axieid}/, axieId));
                 clearTimeout(readygo);
                 readygo = setTimeout(() => {
                   clearTimeout(readygo);
@@ -1589,6 +1603,8 @@ function postAxie(ev) {
     }, 0);
   });
 }
+
+function rebuildShelf() {}
 
 function checkIsBugged(id) {
   if (isAxiePage()) {
@@ -1616,6 +1632,7 @@ function isProfilePage() {
   return pageUrl.match(/profile/);
 }
 
+let lastRun = 0;
 async function run() {
   debugLog("run");
   let dbg;
@@ -1631,6 +1648,9 @@ async function run() {
         setupAxiePost();
       }
       debugLog("run ready");
+      console.log("Run time set.");
+      lastRun = Date.now();
+      lastUrlSeen = window.location.href + "";
     } else {
       notReadyCount++;
       clearMorphDiv();
@@ -1656,6 +1676,9 @@ async function run() {
       if (
         currentURL.match(/https:\/\/marketplace\.axieinfinity\.com\/axie\/\d+/)
       ) {
+        console.log("Run time set.");
+        lastRun = Date.now();
+        lastUrlSeen = window.location.href + "";
         let axieId = parseInt(
           currentURL.substring(currentURL.lastIndexOf("/") + 1)
         );
@@ -1713,37 +1736,43 @@ async function run() {
             detailsNode.appendChild(traits);
           }
 
-          let canvasNodes = document.getElementsByTagName("canvas");
-          if (canvasNodes && canvasNodes.length > 0 && canvasNodes.length < 2) {
-            let canvasNode = canvasNodes[0];
-            let hostNode = canvasNode.parentElement;
-            if (hostNode) {
-              hostNode = hostNode.parentElement;
+          setTimeout(() => {
+            let canvasNodes = document.getElementsByTagName("canvas");
+            if (
+              canvasNodes &&
+              canvasNodes.length > 0 &&
+              canvasNodes.length < 2
+            ) {
+              let canvasNode = canvasNodes[0];
+              let hostNode = canvasNode.parentElement;
               if (hostNode) {
                 hostNode = hostNode.parentElement;
-                if (hostNode && !(hostNode.style + "").match("transform")) {
-                  if (document.getElementById("PageGeneDetails") == null) {
-                    let traits2 = genGenesDiv(axie, null, "details", true);
-                    traits.id = "PageGeneDetails";
-                    traits2.style["font-weight"] = "bold";
+                if (hostNode) {
+                  hostNode = hostNode.parentElement;
+                  if (hostNode && !(hostNode.style + "").match("transform")) {
+                    if (document.getElementById("PageGeneDetails") == null) {
+                      let traits2 = genGenesDiv(axie, null, "details", true);
+                      traits.id = "PageGeneDetails";
+                      traits2.style["font-weight"] = "bold";
 
-                    hostNode.appendChild(traits2);
-                    //console.log(traits2.firstChild.firstChild)
-                    let dataDiv = document.createElement("td");
-                    let purity = Math.round(axie.quality * 100);
-                    let secondary = Math.round(axie.secondary * 100);
-                    dataDiv.textContent =
-                      "P: " + purity + "% S: " + secondary + "%";
-                    dataDiv.style.paddingRight = "10px";
-                    traits2.firstChild.firstChild.appendChild(dataDiv);
+                      hostNode.appendChild(traits2);
+                      //console.log(traits2.firstChild.firstChild)
+                      let dataDiv = document.createElement("td");
+                      let purity = Math.round(axie.quality * 100);
+                      let secondary = Math.round(axie.secondary * 100);
+                      dataDiv.textContent =
+                        "P: " + purity + "% S: " + secondary + "%";
+                      dataDiv.style.paddingRight = "10px";
+                      traits2.firstChild.firstChild.appendChild(dataDiv);
 
-                    let marketLink = buildSearchLink(axie);
-                    traits2.firstChild.children[1].appendChild(marketLink);
+                      let marketLink = buildSearchLink(axie);
+                      traits2.firstChild.children[1].appendChild(marketLink);
+                    }
                   }
                 }
               }
             }
-          }
+          }, 300);
         }
       }
     }
@@ -1831,4 +1860,16 @@ getOptions((response) => {
     init();
     intID = setInterval(run, 1000);
   }
+
+  let lastUrlSeen = window.location.href + "";
+  setInterval(() => {
+    let urlSeen = window.location.href + "";
+    if (lastUrlSeen != urlSeen && Date.now() - lastRun > 1000) {
+      //console.log( "starting run...", urlSeen, lastUrlSeen, Date.now() - lastRun);
+      initObserver = true;
+      run();
+    } else {
+      //console.log( "skipping run...", urlSeen, lastUrlSeen, Date.now() - lastRun);
+    }
+  }, 1000);
 });
