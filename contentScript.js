@@ -616,7 +616,7 @@ function getParentAxieDataCB(id, context, matron, sire, cb) {
 }
 
 function getAxieInfoMarketCB(id, cb, renderEggDetails) {
-  debugLog("getAxieInfoMarketCB", id);
+  //console.log("getAxieInfoMarketCB", id);
   if (id in axies && axies[id].story_id) {
     cb(axies[id]);
   } else {
@@ -662,6 +662,109 @@ function getAxieInfoMarketCB(id, cb, renderEggDetails) {
       } catch (Ex) {}
     }, Math.random() * 500);
   }
+}
+function getAxieInfoMarketBulk(ids) {
+  debugLog("getAxieInfoMarketBulk", ids);
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.runtime.sendMessage(
+        { contentScriptQuery: "getAxieInfoMarketBulk", axieIds: ids },
+        function (results) {
+          //console.log("Bulk call:", results);
+          for (let i = 0; i < results.length; i++) {
+            let id = null;
+            if (results[i] && results[i].story_id) {
+              id = results[i].story_id;
+              axies[id] = results[i];
+            } else {
+              continue;
+            }
+
+            if (results[i].stage > 2) {
+              axies[id].genes = genesToBin(BigInt(axies[id].genes));
+              let traits = getTraits(axies[id].genes);
+              let qp = getQualityAndPureness(
+                traits,
+                axies[id].class.toLowerCase(),
+                false
+              );
+              axies[id].traits = traits;
+              axies[id].quality = qp.quality;
+              axies[id].pureness = qp.pureness;
+              axies[id].secondary = qp.secondary;
+            } else {
+              // Check to see if the want parental details.
+              if (renderEggDetails) {
+                getParentAxieDataCB(
+                  id,
+                  renderEggDetails,
+                  axies[id].matronId,
+                  axies[id].sireId,
+                  function (id, context, matron, sire) {
+                    context(id, matron, sire);
+                  }
+                );
+              }
+            }
+          }
+          resolve(axies);
+        }
+      );
+    } catch (Ex) {
+      reject(Ex);
+    }
+  });
+}
+
+function getAxieInfoMarketBulkCB(ids, cb, renderEggDetails) {
+  debugLog("getAxieInfoMarketBulkCB", ids);
+  try {
+    chrome.runtime.sendMessage(
+      { contentScriptQuery: "getAxieInfoMarketBulk", axieIds: ids },
+      function (results) {
+        //console.log("Bulk call:", results);
+        for (let i = 0; i < results.length; i++) {
+          let id = null;
+          if (results[i] && results[i].story_id) {
+            id = results[i].story_id;
+            axies[id] = results[i];
+          } else {
+            continue;
+          }
+
+          if (results[i].stage > 2) {
+            axies[id].genes = genesToBin(BigInt(axies[id].genes));
+            let traits = getTraits(axies[id].genes);
+            let qp = getQualityAndPureness(
+              traits,
+              axies[id].class.toLowerCase(),
+              false
+            );
+            axies[id].traits = traits;
+            axies[id].quality = qp.quality;
+            axies[id].pureness = qp.pureness;
+            axies[id].secondary = qp.secondary;
+          } else {
+            // Check to see if the want parental details.
+            if (renderEggDetails) {
+              getParentAxieDataCB(
+                id,
+                renderEggDetails,
+                axies[id].matronId,
+                axies[id].sireId,
+                function (id, context, matron, sire) {
+                  context(id, matron, sire);
+                }
+              );
+            }
+          }
+          if (cb) {
+            cb(results);
+          }
+        }
+      }
+    );
+  } catch (Ex) {}
 }
 
 function appendTrait(table, trait) {
@@ -1689,7 +1792,7 @@ async function run() {
           if (checkIsBugged(axie.id) == false) {
             if (
               !axie.refresh_time ||
-              ((Date.now() - axie.refresh_time) / 1000) > 60 * 5
+              (Date.now() - axie.refresh_time) / 1000 > 60 * 5
             ) {
               console.log(
                 "Axie cache data is more than 5 minutes old.  Invalidating..."
@@ -1778,6 +1881,7 @@ async function run() {
     }
 
     //Poll getAxieBriefList if we are on a profile listing page or market listing page, but not axieDetails or ListView
+    let bulkPromises = [];
     if (
       currentURL.match(
         /https:\/\/marketplace\.axieinfinity\.com\/(profile|axie)/
@@ -1795,10 +1899,18 @@ async function run() {
         if (!(axieId in axies)) {
           //get all axies on the page and break
           debugLog("getting axies");
-          getAxieInfoMarketCB(axieId);
+          pageAxies.push(axieId);
+          if (pageAxies.length > 5) {
+            bulkPromises.push(getAxieInfoMarketBulk(pageAxies));
+            pageAxies = [];
+          }
+          //getAxieInfoMarketCB(axieId);
           debugLog(axies);
-          break;
+          //break;
         }
+      }
+      if (pageAxies.length > 0) {
+        bulkPromises.push(getAxieInfoMarketBulk(pageAxies));
       }
     }
 
@@ -1808,31 +1920,34 @@ async function run() {
         currentURL.startsWith("https://marketplace.axieinfinity.com/axie")) &&
       currentURL.lastIndexOf("view=ListView") == -1
     ) {
-      for (let i = 0; i < axieAnchors.length; i++) {
-        let anc = axieAnchors[i];
-        let axieId = parseInt(
-          anc.href.substring(anc.href.lastIndexOf("/") + 1)
-        );
+      //console.log("Waiting on: ", bulkPromises);
+      Promise.all(bulkPromises).then(() => {
+        for (let i = 0; i < axieAnchors.length; i++) {
+          let anc = axieAnchors[i];
+          let axieId = parseInt(
+            anc.href.substring(anc.href.lastIndexOf("/") + 1)
+          );
 
-        getAxieInfoMarketCB(
-          axieId,
-          ((anchor) => {
-            return function (axie) {
-              renderCard(anchor, axie);
-            };
-          })(anc),
-          ((anchor) => {
-            return function (axie, matron, sire) {
-              //console.log(matron, sire);
-              if (!(options.axieEx_minimal && isProfilePage())) {
-                if (options.axieEx_eggParents) {
-                  renderEggCard(anchor, matron, sire);
+          getAxieInfoMarketCB(
+            axieId,
+            ((anchor) => {
+              return function (axie) {
+                renderCard(anchor, axie);
+              };
+            })(anc),
+            ((anchor) => {
+              return function (axie, matron, sire) {
+                //console.log(matron, sire);
+                if (!(options.axieEx_minimal && isProfilePage())) {
+                  if (options.axieEx_eggParents) {
+                    renderEggCard(anchor, matron, sire);
+                  }
                 }
-              }
-            };
-          })(anc)
-        );
-      }
+              };
+            })(anc)
+          );
+        }
+      });
     }
   } catch (e) {
     console.log("ERROR: " + e);

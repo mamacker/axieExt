@@ -1,20 +1,21 @@
-
-chrome.runtime.onInstalled.addListener(function() {
-    getOptions((response) => {
-        if (Object.keys(response).length == 0) {
-            resetOptions();
-        }
-    });
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-        chrome.declarativeContent.onPageChanged.addRules([{
-            conditions: [new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: {hostEquals: 'axieinfinity.com'},
-            })
-            ],
-            actions: [new chrome.declarativeContent.ShowPageAction()]
-        },
-        ]);
-    });
+chrome.runtime.onInstalled.addListener(function () {
+  getOptions((response) => {
+    if (Object.keys(response).length == 0) {
+      resetOptions();
+    }
+  });
+  chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
+    chrome.declarativeContent.onPageChanged.addRules([
+      {
+        conditions: [
+          new chrome.declarativeContent.PageStateMatcher({
+            pageUrl: { hostEquals: "axieinfinity.com" },
+          }),
+        ],
+        actions: [new chrome.declarativeContent.ShowPageAction()],
+      },
+    ]);
+  });
 });
 
 /*
@@ -34,115 +35,207 @@ function getAxieInfoMarket(id, sendResponse) {
 */
 
 function getAxieInfoMarket(id, sendResponse) {
-  fetch("https://api.axie.technology/getaxies/" + parseInt(id), {"headers":{"content-type":"application/json"},"method":"GET"})
-  	.then(response => {
-        response.json().then(result => {
-		    console.log("Axie service result: ", result);
-			if (!result) {
-			  throw "Bad axie service result.";
-			}
-            let axie = result;
-            //axie.pendingExp = axie.battleInfo.pendingExp;
-            sendResponse(axie);
-        }).catch(error => {
-		  console.log(error);
-		  console.log("Trying again in one second...");
-		  setTimeout(() => { getAxieInfoMarket(id, sendResponse); }, 1300);
-		});
+  fetch("https://api.axie.technology/getaxies/" + parseInt(id), {
+    headers: { "content-type": "application/json" },
+    method: "GET",
+  })
+    .then((response) => {
+      response
+        .json()
+        .then((result) => {
+          //console.log("Axie service result: ", result);
+          if (!result) {
+            throw "Bad axie service result.";
+          }
+          let axie = result;
+          //axie.pendingExp = axie.battleInfo.pendingExp;
+          sendResponse(axie);
+        })
+        .catch((error) => {
+          console.log(error);
+          console.log("Trying again in one second...");
+          setTimeout(() => {
+            getAxieInfoMarket(id, sendResponse);
+          }, 1300);
+        });
     })
-    .catch(error => {
-        console.log(error);
-	    console.log("Trying again in one second...");
-	  	setTimeout(() => { getAxieInfoMarket(id, sendResponse); }, 1300);
+    .catch((error) => {
+      console.log(error);
+      console.log("Trying again in one second...");
+      setTimeout(() => {
+        getAxieInfoMarket(id, sendResponse);
+      }, 1300);
+    });
+}
+
+function getAxieInfoMarketBulk(ids, sendResponse) {
+  fetch("https://api.axie.technology/getaxies/" + ids.join(","), {
+    headers: { "content-type": "application/json" },
+    method: "GET",
+  })
+    .then((response) => {
+      response
+        .json()
+        .then((result) => {
+          //console.log("Axie bulk service result: ", result);
+          if (!result) {
+            throw "Bad axie service result.";
+          }
+          //axie.pendingExp = axie.battleInfo.pendingExp;
+          sendResponse(result);
+        })
+        .catch((error) => {
+          console.log(error);
+          console.log("Trying again in one second...");
+          setTimeout(() => {
+            getAxieInfoMarketBulk(ids, sendResponse);
+          }, 1300);
+        });
+    })
+    .catch((error) => {
+      console.log(error);
+      console.log("Trying again in one second...");
+      setTimeout(() => {
+        getAxieInfoMarketBulk(ids, sendResponse);
+      }, 1300);
     });
 }
 
 function invalidateAxieInfoMarket(id, sendResponse) {
-  fetch("https://api.axie.technology/invalidateaxie/" + parseInt(id), {"headers":{"content-type":"application/json"},"method":"GET"})
-  	.then(response => {
-        response.json().then(result => {
-		    console.log("Axie invalidate result: ", result);
-			if (!result) {
-			  throw "Bad axie service result.";
-			}
-            let axie = result;
-            //axie.pendingExp = axie.battleInfo.pendingExp;
-            sendResponse(axie);
-        }).catch(error => {
-		  console.log(error);
-		  console.log("Trying again in one second...");
-		  setTimeout(() => { invalidateAxieInfoMarket(id, sendResponse); }, 1300);
-		});
+  fetch("https://api.axie.technology/invalidateaxie/" + parseInt(id), {
+    headers: { "content-type": "application/json" },
+    method: "GET",
+  })
+    .then((response) => {
+      response
+        .json()
+        .then((result) => {
+          console.log("Axie invalidate result: ", result);
+          if (!result) {
+            throw "Bad axie service result.";
+          }
+          let axie = result;
+          //axie.pendingExp = axie.battleInfo.pendingExp;
+          sendResponse(axie);
+        })
+        .catch((error) => {
+          console.log(error);
+          console.log("Trying again in one second...");
+          setTimeout(() => {
+            invalidateAxieInfoMarket(id, sendResponse);
+          }, 1300);
+        });
     })
-    .catch(error => {
-        console.log(error);
-	    console.log("Trying again in one second...");
-	  	setTimeout(() => { invalidateAxieInfoMarket(id, sendResponse); }, 1300);
+    .catch((error) => {
+      console.log(error);
+      console.log("Trying again in one second...");
+      setTimeout(() => {
+        invalidateAxieInfoMarket(id, sendResponse);
+      }, 1300);
     });
 }
 
 function buggedAxieInfoMarket(id, price, sendResponse) {
-  fetch("https://api.axie.technology/bugged/" + parseInt(id) + "/" + price, {"headers":{"content-type":"application/json"},"method":"GET"})
-  	.then(response => {
-        response.json().then(result => {
-		    console.log("Axie bugged result: ", result);
-			if (!result) {
-			  throw "Bad axie service result.";
-			}
-            let axie = result;
-            sendResponse(axie);
-        }).catch(error => {
-		  console.log(error);
-		  console.log("Trying again in one second...");
-		  setTimeout(() => { buggedAxieInfoMarket(id, sendResponse); }, 1300);
-		});
-    })
-    .catch(error => {
-        console.log(error);
-	    console.log("Trying again in one second...");
-	  	setTimeout(() => { buggedAxieInfoMarket(id, sendResponse); }, 1300);
-    });
-}
-
-function getAxieBriefList(address, page, sort, auctionType, criteria, sendResponse) {
-    //Assume we are at 24 axies per page
-    if (page < 1) page = 1;
-    let from = (page - 1) * 24;
-    let formattedAddress = address;
-    if (formattedAddress != null) {
-        formattedAddress = "\"" + address + "\"";
-    }
-    fetch("https://axieinfinity.com/graphql-server-v2/graphql?r=exp_freak", {
-        "headers": {"content-type": "application/json"},
-        "body": "{\"operationName\":\"GetAxieBriefList\",\"variables\":{\"from\":" + from + ",\"size\":24,\"sort\":\"" + sort + "\",\"auctionType\":\"" + auctionType + "\",\"owner\":" + formattedAddress + ",\"criteria\":" + JSON.stringify(criteria) + "},\"query\":\"query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {\\n  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {\\n    total\\n    results {\\n      ...AxieBrief\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\\nfragment AxieBrief on Axie {\\n  id\\n  genes\\n  owner\\n  name\\n  stage\\n  class\\n  breedCount\\n  image\\n  title\\n  stats {\\n    ...AxieStats\\n    __typename\\n  }\\n  battleInfo {\\n    banned\\n    __typename\\n  }\\n  auction {\\n    currentPrice\\n    currentPriceUSD\\n    __typename\\n  }\\n  parts {\\n    id\\n    name\\n    class\\n    type\\n    specialGenes\\n    __typename\\n  }\\n  __typename\\n}\\nfragment AxieStats on AxieStats {\\n  hp\\n  speed\\n  skill\\n  morale\\n  __typename\\n}\\n\\n\"}",
-        "method": "POST"
-    })
-    .then(response => {
-        response.json().then(result => {
-            let axies = result.data.axies.results;
-            sendResponse(axies);
+  fetch("https://api.axie.technology/bugged/" + parseInt(id) + "/" + price, {
+    headers: { "content-type": "application/json" },
+    method: "GET",
+  })
+    .then((response) => {
+      response
+        .json()
+        .then((result) => {
+          console.log("Axie bugged result: ", result);
+          if (!result) {
+            throw "Bad axie service result.";
+          }
+          let axie = result;
+          sendResponse(axie);
+        })
+        .catch((error) => {
+          console.log(error);
+          console.log("Trying again in one second...");
+          setTimeout(() => {
+            buggedAxieInfoMarket(id, sendResponse);
+          }, 1300);
         });
     })
-    .catch(error => {
-        console.log(error);
+    .catch((error) => {
+      console.log(error);
+      console.log("Trying again in one second...");
+      setTimeout(() => {
+        buggedAxieInfoMarket(id, sendResponse);
+      }, 1300);
     });
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.contentScriptQuery == "getAxieInfoMarket") {
-        getAxieInfoMarket(request.axieId, sendResponse);
-        return true;
-    }
-    if (request.contentScriptQuery == "invalidateAxieInfoMarket") {
-        invalidateAxieInfoMarket(request.axieId, sendResponse);
-        return true;
-    }
-    if (request.contentScriptQuery == "getAxieBriefList") {
-        getAxieBriefList(request.address, request.page, request.sort, request.auctionType, request.criteria, sendResponse);
-        return true;
-    }
-    if (request.contentScriptQuery == "buggedAxieInfoMarket") {
-        buggedAxieInfoMarket(request.axieId, request.price, sendResponse);
-        return true;
-    }
+function getAxieBriefList(
+  address,
+  page,
+  sort,
+  auctionType,
+  criteria,
+  sendResponse
+) {
+  //Assume we are at 24 axies per page
+  if (page < 1) page = 1;
+  let from = (page - 1) * 24;
+  let formattedAddress = address;
+  if (formattedAddress != null) {
+    formattedAddress = '"' + address + '"';
+  }
+  fetch("https://axieinfinity.com/graphql-server-v2/graphql?r=exp_freak", {
+    headers: { "content-type": "application/json" },
+    body:
+      '{"operationName":"GetAxieBriefList","variables":{"from":' +
+      from +
+      ',"size":24,"sort":"' +
+      sort +
+      '","auctionType":"' +
+      auctionType +
+      '","owner":' +
+      formattedAddress +
+      ',"criteria":' +
+      JSON.stringify(criteria) +
+      '},"query":"query GetAxieBriefList($auctionType: AuctionType, $criteria: AxieSearchCriteria, $from: Int, $sort: SortBy, $size: Int, $owner: String) {\\n  axies(auctionType: $auctionType, criteria: $criteria, from: $from, sort: $sort, size: $size, owner: $owner) {\\n    total\\n    results {\\n      ...AxieBrief\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\\nfragment AxieBrief on Axie {\\n  id\\n  genes\\n  owner\\n  name\\n  stage\\n  class\\n  breedCount\\n  image\\n  title\\n  stats {\\n    ...AxieStats\\n    __typename\\n  }\\n  battleInfo {\\n    banned\\n    __typename\\n  }\\n  auction {\\n    currentPrice\\n    currentPriceUSD\\n    __typename\\n  }\\n  parts {\\n    id\\n    name\\n    class\\n    type\\n    specialGenes\\n    __typename\\n  }\\n  __typename\\n}\\nfragment AxieStats on AxieStats {\\n  hp\\n  speed\\n  skill\\n  morale\\n  __typename\\n}\\n\\n"}',
+    method: "POST",
+  })
+    .then((response) => {
+      response.json().then((result) => {
+        let axies = result.data.axies.results;
+        sendResponse(axies);
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.contentScriptQuery == "getAxieInfoMarketBulk") {
+    getAxieInfoMarketBulk(request.axieIds, sendResponse);
+    return true;
+  }
+  if (request.contentScriptQuery == "getAxieInfoMarket") {
+    getAxieInfoMarket(request.axieId, sendResponse);
+    return true;
+  }
+  if (request.contentScriptQuery == "invalidateAxieInfoMarket") {
+    invalidateAxieInfoMarket(request.axieId, sendResponse);
+    return true;
+  }
+  if (request.contentScriptQuery == "getAxieBriefList") {
+    getAxieBriefList(
+      request.address,
+      request.page,
+      request.sort,
+      request.auctionType,
+      request.criteria,
+      sendResponse
+    );
+    return true;
+  }
+  if (request.contentScriptQuery == "buggedAxieInfoMarket") {
+    buggedAxieInfoMarket(request.axieId, request.price, sendResponse);
+    return true;
+  }
 });
