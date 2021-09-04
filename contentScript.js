@@ -1689,7 +1689,7 @@ async function run() {
           if (checkIsBugged(axie.id) == false) {
             if (
               !axie.refresh_time ||
-              (axie.refresh_time - Date.now()) / 1000 > 60 * 5
+              ((Date.now() - axie.refresh_time) / 1000) > 60 * 5
             ) {
               console.log(
                 "Axie cache data is more than 5 minutes old.  Invalidating..."
