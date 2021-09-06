@@ -35,6 +35,11 @@ function getAxieInfoMarket(id, sendResponse) {
 */
 
 function getAxieInfoMarket(id, sendResponse) {
+  if (parseInt(id) == NaN || id == undefined) {
+    sendResponse(null);
+    return;
+  }
+
   fetch("https://api.axie.technology/getaxies/" + parseInt(id), {
     headers: { "content-type": "application/json" },
     method: "GET",
@@ -102,6 +107,11 @@ function getAxieInfoMarketBulk(ids, sendResponse) {
 }
 
 function invalidateAxieInfoMarket(id, sendResponse) {
+  if (parseInt(id) == NaN || id == undefined) {
+    sendResponse(null);
+    return;
+  }
+
   fetch("https://api.axie.technology/invalidateaxie/" + parseInt(id), {
     headers: { "content-type": "application/json" },
     method: "GET",
@@ -136,6 +146,11 @@ function invalidateAxieInfoMarket(id, sendResponse) {
 }
 
 function buggedAxieInfoMarket(id, price, sendResponse) {
+  if (parseInt(id) == NaN || id == undefined) {
+    sendResponse(null);
+    return;
+  }
+
   fetch("https://api.axie.technology/bugged/" + parseInt(id) + "/" + price, {
     headers: { "content-type": "application/json" },
     method: "GET",

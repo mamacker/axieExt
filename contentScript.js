@@ -538,6 +538,10 @@ function getAxieInfoMarket(id) {
         chrome.runtime.sendMessage(
           { contentScriptQuery: "getAxieInfoMarket", axieId: id },
           function (result) {
+            if (!result) {
+              return;
+            }
+
             //console.log("From fetch: ", result);
             axies[id] = result;
             if (result && result["stage"] && result.stage > 2) {
@@ -619,6 +623,18 @@ function getAxieInfoMarketCB(id, cb, renderEggDetails) {
   //console.log("getAxieInfoMarketCB", id);
   if (id in axies && axies[id].story_id) {
     cb(axies[id]);
+    // Check to see if the want parental details.
+    if (renderEggDetails) {
+      getParentAxieDataCB(
+        id,
+        renderEggDetails,
+        axies[id].matronId,
+        axies[id].sireId,
+        function (id, context, matron, sire) {
+          context(id, matron, sire);
+        }
+      );
+    }
   } else {
     axies[id] = {}; //kind of mutex
     setTimeout(() => {
@@ -627,6 +643,8 @@ function getAxieInfoMarketCB(id, cb, renderEggDetails) {
         chrome.runtime.sendMessage(
           { contentScriptQuery: "getAxieInfoMarket", axieId: id },
           function (result) {
+            if (!result) return;
+
             axies[id] = result;
             if (result.stage > 2) {
               axies[id].genes = genesToBin(BigInt(axies[id].genes));
@@ -663,7 +681,7 @@ function getAxieInfoMarketCB(id, cb, renderEggDetails) {
     }, Math.random() * 500);
   }
 }
-function getAxieInfoMarketBulk(ids) {
+function getAxieInfoMarketBulk(ids, renderEggDetails) {
   debugLog("getAxieInfoMarketBulk", ids);
   return new Promise((resolve, reject) => {
     try {
@@ -1352,6 +1370,37 @@ function buildSearchLink(axie) {
     `https://marketplace.axieinfinity.com/axie?class=${axie.class}&part=${axie.traits.back.d.partId}` +
     `&part=${axie.traits.mouth.d.partId}&part=${axie.traits.horn.d.partId}&part=${axie.traits.tail.d.partId}` +
     `&breedCount=${axie.breedCount}&breedCount=${axie.breedCount}`;
+  marketH.href =
+    `https://projectcricket.com/?` +
+    `geneRefinement[back][d]=true` +
+    `&geneRefinement[back][r1]=false` +
+    `&geneRefinement[back][r2]=false` +
+    `&geneRefinement[back][partName]=${axie.traits.back.d.partId}` +
+    `&geneRefinement[ears][d]=false` +
+    `&geneRefinement[ears][r1]=false` +
+    `&geneRefinement[ears][r2]=false` +
+    `&geneRefinement[ears][partName]=` +
+    `&geneRefinement[eyes][d]=false` +
+    `&geneRefinement[eyes][r1]=false` +
+    `&geneRefinement[eyes][r2]=false` +
+    `&geneRefinement[eyes][partName]=` +
+    `&geneRefinement[horn][d]=true` +
+    `&geneRefinement[horn][r1]=false` +
+    `&geneRefinement[horn][r2]=false` +
+    `&geneRefinement[horn][partName]=${axie.traits.horn.d.partId}` +
+    `&geneRefinement[mouth][d]=true` +
+    `&geneRefinement[mouth][r1]=false` +
+    `&geneRefinement[mouth][r2]=false` +
+    `&geneRefinement[mouth][partName]=${axie.traits.mouth.d.partId}` +
+    `&geneRefinement[tail][d]=true` +
+    `&geneRefinement[tail][r1]=false` +
+    `&geneRefinement[tail][r2]=false` +
+    `&geneRefinement[tail][partName]=${axie.traits.tail.d.partId}` +
+    `&page=1` +
+    `&query=` +
+    `&range[fields.breedcount][min]=${axie.breedCount}` +
+    `&range[fields.breedcount][max]=${axie.breedCount}` +
+    `&refinementList[fields.class][0]=`;
   marketH.alt = "See more like this...";
   marketH.target = "_blank";
   marketH.addEventListener("click", (e) => {
