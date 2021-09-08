@@ -624,16 +624,18 @@ function getAxieInfoMarketCB(id, cb, renderEggDetails) {
   if (id in axies && axies[id].story_id) {
     cb(axies[id]);
     // Check to see if the want parental details.
-    if (renderEggDetails) {
-      getParentAxieDataCB(
-        id,
-        renderEggDetails,
-        axies[id].matronId,
-        axies[id].sireId,
-        function (id, context, matron, sire) {
-          context(id, matron, sire);
-        }
-      );
+    if (axies[id].stage <= 2) {
+      if (renderEggDetails) {
+        getParentAxieDataCB(
+          id,
+          renderEggDetails,
+          axies[id].matronId,
+          axies[id].sireId,
+          function (id, context, matron, sire) {
+            context(id, matron, sire);
+          }
+        );
+      }
     }
   } else {
     axies[id] = {}; //kind of mutex
@@ -1370,37 +1372,54 @@ function buildSearchLink(axie) {
     `https://marketplace.axieinfinity.com/axie?class=${axie.class}&part=${axie.traits.back.d.partId}` +
     `&part=${axie.traits.mouth.d.partId}&part=${axie.traits.horn.d.partId}&part=${axie.traits.tail.d.partId}` +
     `&breedCount=${axie.breedCount}&breedCount=${axie.breedCount}`;
+  /*https://projectcricket.com/
+  ?gene[0][part]=mouth
+  &gene[0][partId]=mouth-tiny-turtle
+  &gene[0][d]=true
+  &gene[0][r1]=false
+  &gene[0][r2]=false
+  &gene[1][part]=horn
+  &gene[1][partId]=horn-wing-horn
+  &gene[1][d]=true
+  &gene[1][r1]=false
+  &gene[1][r2]=false
+  &gene[2][part]=back
+  &gene[2][partId]=back-garish-worm
+  &gene[2][d]=true
+  &gene[2][r1]=false
+  &gene[2][r2]=false
+  &gene[3][part]=tail
+  &gene[3][partId]=tail-grass-snake
+  &gene[3][d]=true
+  &gene[3][r1]=false
+  &gene[3][r2]=false"*/
   marketH.href =
     `https://projectcricket.com/?` +
-    `geneRefinement[back][d]=true` +
-    `&geneRefinement[back][r1]=false` +
-    `&geneRefinement[back][r2]=false` +
-    `&geneRefinement[back][partName]=${axie.traits.back.d.partId}` +
-    `&geneRefinement[ears][d]=false` +
-    `&geneRefinement[ears][r1]=false` +
-    `&geneRefinement[ears][r2]=false` +
-    `&geneRefinement[ears][partName]=` +
-    `&geneRefinement[eyes][d]=false` +
-    `&geneRefinement[eyes][r1]=false` +
-    `&geneRefinement[eyes][r2]=false` +
-    `&geneRefinement[eyes][partName]=` +
-    `&geneRefinement[horn][d]=true` +
-    `&geneRefinement[horn][r1]=false` +
-    `&geneRefinement[horn][r2]=false` +
-    `&geneRefinement[horn][partName]=${axie.traits.horn.d.partId}` +
-    `&geneRefinement[mouth][d]=true` +
-    `&geneRefinement[mouth][r1]=false` +
-    `&geneRefinement[mouth][r2]=false` +
-    `&geneRefinement[mouth][partName]=${axie.traits.mouth.d.partId}` +
-    `&geneRefinement[tail][d]=true` +
-    `&geneRefinement[tail][r1]=false` +
-    `&geneRefinement[tail][r2]=false` +
-    `&geneRefinement[tail][partName]=${axie.traits.tail.d.partId}` +
+    `gene[0][d]=true` +
+    `&gene[0][r1]=false` +
+    `&gene[0][r2]=false` +
+    `&gene[0][part]=mouth` +
+    `&gene[0][partId]=${axie.traits.mouth.d.partId}` +
+    `&gene[1][d]=true` +
+    `&gene[1][r1]=false` +
+    `&gene[1][r2]=false` +
+    `&gene[1][part]=horn` +
+    `&gene[1][partId]=${axie.traits.horn.d.partId}` +
+    `&gene[2][d]=true` +
+    `&gene[2][r1]=false` +
+    `&gene[2][r2]=false` +
+    `&gene[2][part]=back` +
+    `&gene[2][partId]=${axie.traits.back.d.partId}` +
+    `&gene[3][d]=true` +
+    `&gene[3][r1]=false` +
+    `&gene[3][r2]=false` +
+    `&gene[3][part]=tail` +
+    `&gene[3][partId]=${axie.traits.tail.d.partId}` +
     `&page=1` +
     `&query=` +
     `&range[fields.breedcount][min]=${axie.breedCount}` +
     `&range[fields.breedcount][max]=${axie.breedCount}` +
-    `&refinementList[fields.class][0]=`;
+    `&refinementList[fields.class][0]=${axie.class}`;
   marketH.alt = "See more like this...";
   marketH.target = "_blank";
   marketH.addEventListener("click", (e) => {
