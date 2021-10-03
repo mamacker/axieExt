@@ -1173,7 +1173,7 @@ function renderCard(anc, axie) {
           " M:" +
           axie.stats.morale +
           " P:" +
-          purity +
+          secondary +
           "%";
       }
     }
