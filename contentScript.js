@@ -1875,7 +1875,7 @@ async function run() {
                   if (hostNode && !(hostNode.style + "").match("transform")) {
                     if (document.getElementById("PageGeneDetails") == null) {
                       let traits2 = genGenesDiv(axie, null, "details", true);
-                      traits.id = "PageGeneDetails";
+                      traits2.id = "PageGeneDetails";
                       traits2.style["font-weight"] = "bold";
 
                       hostNode.appendChild(traits2);
@@ -1981,6 +1981,7 @@ async function run() {
 
 var intID;
 var options = {};
+let goInterval = null;
 //currently, the extension will keep running if the page was previously loaded while enabled...need to reload page to disable inflight extension.
 getOptions((response) => {
   options[ENABLE_OPTION] = response[ENABLE_OPTION];
@@ -1997,7 +1998,7 @@ getOptions((response) => {
   }
 
   let lastUrlSeen = window.location.href + "";
-  setInterval(() => {
+  goInterval = setInterval(() => {
     let urlSeen = window.location.href + "";
     if (lastUrlSeen != urlSeen && Date.now() - lastRun > 1000) {
       //console.log( "starting run...", urlSeen, lastUrlSeen, Date.now() - lastRun);
