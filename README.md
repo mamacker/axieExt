@@ -1,5 +1,9 @@
 A biggish update to Freak's Axie Extension for Chrome (and compatible browsers) - that allows for a cache of the Axie data and several usability elements.
+
+
 Tip jar: ronin:91ca5e56fc6231fc413fdede10b2f3f4ca76ac22
+
+
 Installable from the Google Store at:
 
 https://chrome.google.com/webstore/detail/explorers-freak-extension/omgdahfemndocejpleigdkkapmikcnjl
