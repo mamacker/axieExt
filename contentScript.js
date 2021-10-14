@@ -1553,7 +1553,7 @@ function buildShelfButtons() {
 }
 
 function getAxieIdFromHref(href) {
-  let axieId = href.replace(/.*axie.(\d+)\/?/, "$1");
+  let axieId = href.replace(/.*axie.(\d+).*/, "$1");
   if (isNaN(axieId) || axieId == "") {
     return "";
   } else {
