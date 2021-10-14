@@ -117,6 +117,7 @@ function debugLog(msg, ...extra) {
 }
 
 function loadComplete(mutationsList) {
+  console.log("Goping");
   for (let i = 0; i < mutationsList.length; i++) {
     for (let j = 0; j < mutationsList[i].removedNodes.length; j++) {
       //if the spinning puff is removed then we are loaded
@@ -486,7 +487,7 @@ async function getAccountFromProfile() {
   let axieAnchors = document.querySelectorAll("a[href^='/axie/']");
   if (axieAnchors.length > 0) {
     let anc = axieAnchors[0];
-    let axieId = parseInt(anc.href.substring(anc.href.lastIndexOf("/") + 1));
+    let axieId = parseInt(getAxieIdFromHref(anc.href));
     let axie = await getAxieInfoMarket(axieId);
     //this will return the 0x formatted ronin address
     return axie.owner;
@@ -1078,35 +1079,39 @@ function renderCard(anc, axie) {
       (secondary >= options.axieEx_fireThreshold && secondary < 100)
     ) {
       let imgHolder = anc.querySelector(".img-placeholder");
-      imgHolder.style["background-image"] =
-        "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/770159246796128258.png)";
-      imgHolder.style["background-position-x"] = "122px";
-      imgHolder.style["background-position-y"] = "71px";
-      imgHolder.style["background-size"] = "39%";
-      imgHolder.style["background-repeat"] = "no-repeat";
-      if (options.axieEx_minimal) {
+      if (imgHolder) {
         imgHolder.style["background-image"] =
-          "url(https://i.imgur.com/gOLXyOa.png)";
-        imgHolder.style["background-position-x"] = "0px";
-        imgHolder.style["background-position-y"] = "0px";
-        imgHolder.style["background-size"] = "10%";
+          "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/770159246796128258.png)";
+        imgHolder.style["background-position-x"] = "122px";
+        imgHolder.style["background-position-y"] = "71px";
+        imgHolder.style["background-size"] = "39%";
         imgHolder.style["background-repeat"] = "no-repeat";
+        if (options.axieEx_minimal) {
+          imgHolder.style["background-image"] =
+            "url(https://i.imgur.com/gOLXyOa.png)";
+          imgHolder.style["background-position-x"] = "0px";
+          imgHolder.style["background-position-y"] = "0px";
+          imgHolder.style["background-size"] = "10%";
+          imgHolder.style["background-repeat"] = "no-repeat";
+        }
       }
     } else if (purity == 100 || secondary == 100) {
       let imgHolder = anc.querySelector(".img-placeholder");
-      imgHolder.style["background-image"] =
-        "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/XDZT.gif)";
-      imgHolder.style["background-position-x"] = "112px";
-      imgHolder.style["background-position-y"] = "75px";
-      imgHolder.style["background-size"] = "70%";
-      imgHolder.style["background-repeat"] = "no-repeat";
-      if (options.axieEx_minimal) {
+      if (imgHolder) {
         imgHolder.style["background-image"] =
-          "url(https://i.imgur.com/gOLXyOa.png)";
-        imgHolder.style["background-position-x"] = "0px";
-        imgHolder.style["background-position-y"] = "0px";
-        imgHolder.style["background-size"] = "10%";
+          "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/XDZT.gif)";
+        imgHolder.style["background-position-x"] = "112px";
+        imgHolder.style["background-position-y"] = "75px";
+        imgHolder.style["background-size"] = "70%";
         imgHolder.style["background-repeat"] = "no-repeat";
+        if (options.axieEx_minimal) {
+          imgHolder.style["background-image"] =
+            "url(https://i.imgur.com/gOLXyOa.png)";
+          imgHolder.style["background-position-x"] = "0px";
+          imgHolder.style["background-position-y"] = "0px";
+          imgHolder.style["background-size"] = "10%";
+          imgHolder.style["background-repeat"] = "no-repeat";
+        }
       }
     }
 
@@ -1243,19 +1248,21 @@ function renderCard(anc, axie) {
         }
 
         let imgHolder = anc.querySelector(".img-placeholder");
-        imgHolder.style["background-image"] =
-          "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/pngaaa.com-1654773.png)";
-        imgHolder.style["background-position-x"] = "117px";
-        imgHolder.style["background-position-y"] = "68px";
-        imgHolder.style["background-size"] = "80%";
-        imgHolder.style["background-repeat"] = "no-repeat";
-        if (options.axieEx_minimal) {
+        if (imgHolder) {
           imgHolder.style["background-image"] =
-            "url(https://i.imgur.com/gOLXyOa.png)";
-          imgHolder.style["background-position-x"] = "0px";
-          imgHolder.style["background-position-y"] = "0px";
-          imgHolder.style["background-size"] = "10%";
+            "url(https://imagewerks.s3.us-west-2.amazonaws.com/BJy7iy6Tb/pngaaa.com-1654773.png)";
+          imgHolder.style["background-position-x"] = "117px";
+          imgHolder.style["background-position-y"] = "68px";
+          imgHolder.style["background-size"] = "80%";
           imgHolder.style["background-repeat"] = "no-repeat";
+          if (options.axieEx_minimal) {
+            imgHolder.style["background-image"] =
+              "url(https://i.imgur.com/gOLXyOa.png)";
+            imgHolder.style["background-position-x"] = "0px";
+            imgHolder.style["background-position-y"] = "0px";
+            imgHolder.style["background-size"] = "10%";
+            imgHolder.style["background-repeat"] = "no-repeat";
+          }
         }
       }
       content.className = content.className.replace("invisible", "visible");
@@ -1547,8 +1554,12 @@ function buildShelfButtons() {
 }
 
 function getAxieIdFromHref(href) {
-  let axieId = href.replace(/.*axie.(\d+)/, "$1");
-  return axieId;
+  let axieId = href.replace(/.*axie.(\d+)\/?/, "$1");
+  if (isNaN(axieId) || axieId == "") {
+    return "";
+  } else {
+    return axieId;
+  }
 }
 
 function addCartAxie(axieId) {
@@ -1732,13 +1743,6 @@ function rebuildShelf() {}
 function checkIsBugged(id) {
   if (isAxiePage()) {
     if (document.getElementsByClassName("text-warning-4").length > 0) {
-      if (document.getElementsByTagName("h3").length == 1) {
-        let priceDetails = document.getElementsByTagName("h3")[0].textContent;
-        let priceParts = priceDetails.split(/\s+/);
-        if (priceParts.length > 1) {
-          buggedAxieInfoMarketCB(id, priceParts[1]);
-        }
-      }
       return true;
     }
   }
@@ -1761,7 +1765,7 @@ async function run() {
   let dbg;
   try {
     let axieAnchors = document.querySelectorAll("a[href^='/axie/']");
-    debugLog(axieAnchors);
+    debugLog("Axie anchors: ", axieAnchors);
     if (axieAnchors.length > 0 && observer != null) {
       clearInterval(intID);
       intID = -1;
@@ -1802,25 +1806,25 @@ async function run() {
         //console.log("Run time set.");
         lastRun = Date.now();
         lastUrlSeen = window.location.href + "";
-        let axieId = parseInt(
-          currentURL.substring(currentURL.lastIndexOf("/") + 1)
-        );
+        let axieId = parseInt(getAxieIdFromHref(currentURL));
         let axie;
-        axie = await getAxieInfoMarket(axieId);
+
+        if (axieId != "") axie = await getAxieInfoMarket(axieId);
+        else {
+          axie = null;
+        }
 
         if (axie && axie.id) {
-          if (checkIsBugged(axie.id) == false) {
-            if (
-              !axie.refresh_time ||
-              (Date.now() - axie.refresh_time) / 1000 > 60 * 5
-            ) {
-              console.log(
-                "Axie cache data is more than 5 minutes old.  Invalidating..."
-              );
-              invalidateAxieInfoMarketCB(axie.id, () => {
-                clearUpdateDiv();
-              });
-            }
+          if (
+            !axie.refresh_time ||
+            (Date.now() - axie.refresh_time) / 1000 > 60 * 5
+          ) {
+            console.log(
+              "Axie cache data is more than 5 minutes old.  Invalidating..."
+            );
+            invalidateAxieInfoMarketCB(axie.id, () => {
+              clearUpdateDiv();
+            });
           }
         }
 
@@ -1906,27 +1910,29 @@ async function run() {
       currentURL.match(
         /https:\/\/marketplace\.axieinfinity\.com\/(profile|axie)/
       ) &&
-      !currentURL.match(/\/axie\/\d+/) &&
+      !currentURL.match(/\/axie\/\d+\/?/) &&
       currentURL.lastIndexOf("view=ListView") == -1
     ) {
       let pageAxies = [];
       for (let i = 0; i < axieAnchors.length; i++) {
         let anc = axieAnchors[i];
         let div = anc.firstElementChild;
-        let axieId = parseInt(
-          anc.href.substring(anc.href.lastIndexOf("/") + 1)
-        );
+        let axieId = getAxieIdFromHref(anc.href);
         if (!(axieId in axies)) {
           //get all axies on the page and break
-          debugLog("getting axies");
-          pageAxies.push(axieId);
-          if (pageAxies.length > 5) {
-            bulkPromises.push(getAxieInfoMarketBulk(pageAxies));
-            pageAxies = [];
+          debugLog("getting axies", axieId);
+          if (!Number.isNaN(axieId)) {
+            pageAxies.push(axieId);
+            if (pageAxies.length > 5) {
+              bulkPromises.push(getAxieInfoMarketBulk(pageAxies));
+              pageAxies = [];
+            }
+            //getAxieInfoMarketCB(axieId);
+            debugLog(axies);
+            //break;
+          } else {
+            debugLog("axieId is NaN", axieId);
           }
-          //getAxieInfoMarketCB(axieId);
-          debugLog(axies);
-          //break;
         }
       }
       if (pageAxies.length > 0) {
@@ -1944,9 +1950,7 @@ async function run() {
       Promise.all(bulkPromises).then(() => {
         for (let i = 0; i < axieAnchors.length; i++) {
           let anc = axieAnchors[i];
-          let axieId = parseInt(
-            anc.href.substring(anc.href.lastIndexOf("/") + 1)
-          );
+          let axieId = parseInt(getAxieIdFromHref(anc.href));
 
           getAxieInfoMarketCB(
             axieId,
