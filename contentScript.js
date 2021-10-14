@@ -117,7 +117,6 @@ function debugLog(msg, ...extra) {
 }
 
 function loadComplete(mutationsList) {
-  console.log("Goping");
   for (let i = 0; i < mutationsList.length; i++) {
     for (let j = 0; j < mutationsList[i].removedNodes.length; j++) {
       //if the spinning puff is removed then we are loaded
