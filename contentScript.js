@@ -1797,7 +1797,9 @@ async function run() {
 
       observer.observe(targetNode, observerConfig);
       initObserver = false;
+    }
 
+    if (true) {
       //single axie (axieDetail page). Added mouseover handler to Stats text
       if (
         currentURL.match(/https:\/\/marketplace\.axieinfinity\.com\/axie\/\d+/)
@@ -1985,6 +1987,8 @@ async function run() {
 var intID;
 var options = {};
 let goInterval = null;
+let lastUrlSeen = window.location.href + "";
+
 //currently, the extension will keep running if the page was previously loaded while enabled...need to reload page to disable inflight extension.
 getOptions((response) => {
   options[ENABLE_OPTION] = response[ENABLE_OPTION];
@@ -2000,7 +2004,6 @@ getOptions((response) => {
     intID = setInterval(run, 1000);
   }
 
-  let lastUrlSeen = window.location.href + "";
   goInterval = setInterval(() => {
     let urlSeen = window.location.href + "";
     if (lastUrlSeen != urlSeen && Date.now() - lastRun > 1000) {
