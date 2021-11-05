@@ -188,7 +188,7 @@ async function init() {
     if (
       window.location.href == currentURL &&
       !window.location.href.startsWith(
-        "https://marketplace.axieinfinity.com/axie/"
+        "https://marketplace.axieinfinity.com/axie/d+"
       )
     ) {
       //ignore details page
@@ -198,18 +198,16 @@ async function init() {
         mutationsList[0].target.children.length == 2
       ) {
         var mutated = mutationsList[0];
+
         try {
+          // Z-Index fix from Freak.
           if (
-            mutated.target.children[1].children[0].nodeName == "UL" &&
-            mutated.target.children[1].children[0].textContent.indexOf(
-              "Highest Price"
-            ) != -1
+            mutated.target.children[1].children[0].nodeName == "DIV" &&
+            mutated.target.children[1].children[0].textContent.search(
+              /Highest Price|Not for sale/
+            )
           ) {
-            mutated.target.children[1].style["zIndex"] = 99999;
-          } else if (
-            mutated.target.children[1].className.includes("transition-opacity")
-          ) {
-            mutated.target.children[1].style["zIndex"] = 99998;
+            mutated.target.children[1].children[0].style["zIndex"] = 9998;
           }
         } catch (ex) {}
       } else {
