@@ -1128,6 +1128,21 @@ function renderCard(anc, axie) {
       }
     }
 
+    if (!options.axieEx_minimal) {
+      if (axie.bugged) {
+        let h5s = anc.getElementsByTagName("h5");
+        if (h5s.length == 1) {
+          let priceDetails = h5s[0].textContent;
+          let priceParts = priceDetails.split(/\s+/);
+          if (priceParts.length > 1) {
+            if (priceParts[1] + 0 <= axie.bugged_price) {
+              h5s[0].textContent += "🐞";
+            }
+          }
+        }
+      }
+    }
+
     let breedHolder = anc.getElementsByTagName("small");
     // Check to see if this is the second call.
     if (breedHolder[1].classList.contains("smalldetails")) {
@@ -1740,6 +1755,13 @@ function rebuildShelf() {}
 function checkIsBugged(id) {
   if (isAxiePage()) {
     if (document.getElementsByClassName("text-warning-4").length > 0) {
+      if (document.getElementsByTagName("h3").length == 1) {
+        let priceDetails = document.getElementsByTagName("h3")[0].textContent;
+        let priceParts = priceDetails.split(/\s+/);
+        if (priceParts.length > 1) {
+          buggedAxieInfoMarketCB(id, priceParts[1]);
+        }
+      }
       return true;
     }
   }
@@ -1814,16 +1836,18 @@ async function run() {
         }
 
         if (axie && axie.id) {
-          if (
-            !axie.refresh_time ||
-            (Date.now() - axie.refresh_time) / 1000 > 60 * 5
-          ) {
-            console.log(
-              "Axie cache data is more than 5 minutes old.  Invalidating..."
-            );
-            invalidateAxieInfoMarketCB(axie.id, () => {
-              clearUpdateDiv();
-            });
+          if (checkIsBugged(axie.id) == false) {
+            if (
+              !axie.refresh_time ||
+              (Date.now() - axie.refresh_time) / 1000 > 60 * 5
+            ) {
+              console.log(
+                "Axie cache data is more than 5 minutes old.  Invalidating..."
+              );
+              invalidateAxieInfoMarketCB(axie.id, () => {
+                clearUpdateDiv();
+              });
+            }
           }
         }
 
