@@ -242,7 +242,7 @@ async function getBodyParts() {
   //    catch(async (err) => {
   //console.log("Failed to get body parts from the API");
   //API is unreliable. fall back to hard-coded local copy.
-  let parts = await fetch(chrome.extension.getURL("body-parts.json")).then(
+  let parts = await fetch(chrome.runtime.getURL("body-parts.json")).then(
     (res) => res.json()
   );
 

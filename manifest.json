@@ -9,7 +9,7 @@
     "48": "images/rep_icon48.png",
     "128": "images/rep_icon128.png"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_title": "Explorer's Freak Axie Extension",
     "default_icon": {
@@ -20,8 +20,7 @@
     }
   },
   "background": {
-    "scripts": ["options.js", "background.js"],
-    "persistent": false
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -29,6 +28,11 @@
       "js": ["options.js", "traitmapping.js", "contentScript.js"]
     }
   ],
-  "web_accessible_resources": ["body-parts.json", "svgs.json"],
-  "manifest_version": 2
+  "web_accessible_resources": [
+    {
+      "resources": ["body-parts.json", "svgs.json"],
+      "matches": ["https://marketplace.axieinfinity.com/*"]
+    }
+  ],
+  "manifest_version": 3
 }
