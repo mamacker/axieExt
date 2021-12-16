@@ -1,5 +1,6 @@
 const ENABLE_OPTION = "axieEx_enabled";
 const MINIMAL_OPTION = "axieEx_minimal";
+const JAPAN_COUNT = "axieEx_japanCount";
 const SHOW_BREEDS_STATS_OPTION = "axieEx_breedsStats";
 const SHOW_EGG_PARENTS = "axieEx_eggParents";
 const SHOW_AUCTION = "axieEx_auction";
@@ -23,6 +24,7 @@ function getOptions(callback) {
     [
       ENABLE_OPTION,
       MINIMAL_OPTION,
+      JAPAN_COUNT,
       SHOW_EGG_PARENTS,
       SHOW_AUCTION,
       FIRE_THRESHOLD,
@@ -43,6 +45,7 @@ function resetOptions() {
   let defaultOptions = {};
   defaultOptions[ENABLE_OPTION] = true;
   defaultOptions[MINIMAL_OPTION] = false;
+  defaultOptions[JAPAN_COUNT] = 2;
   defaultOptions[SHOW_BREEDS_STATS_OPTION] = true;
   defaultOptions[SHOW_EGG_PARENTS] = true;
   defaultOptions[SHOW_AUCTION] = true;
