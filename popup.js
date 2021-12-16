@@ -1,7 +1,7 @@
-
 const optionsMapping = {
     enableOption: ENABLE_OPTION, 
     minimalOption: MINIMAL_OPTION, 
+    japanCount: JAPAN_COUNT, 
     showBreedsStats: SHOW_BREEDS_STATS_OPTION,
     showAuction: SHOW_AUCTION,
     eggParentOption: SHOW_EGG_PARENTS,
@@ -11,6 +11,7 @@ const optionsMapping = {
 };
 
 const optionIsValue = {
+  japanCount: true,
   fireThreshold: true,
   postAddress: true
 }
