@@ -101,6 +101,26 @@ const SEARCH_PARAMS = [
   "skill",
   "morale",
 ];
+const jpParts = [
+  'Mon',
+  'Karimata',
+  'Maki',
+  'Omatsuri',
+  'Origami',
+  'Kendama',
+  'Yorishiro',
+  'Umaibo',
+  'Yen',
+  'Dokuganryu',
+  'Kawaii',
+  'Geisha',
+  'Hamaya',
+  'Dango',
+  'Kabuki',
+  'Yakitori',
+  'Koinobori',
+  'Maiko'
+];
 
 var notReadyCount = 0;
 var currentURL = window.location.href;
@@ -426,6 +446,7 @@ function getPartsFromGroup(part, group, region) {
 }
 
 function getTraits(genes) {
+  var jpcount = 0;
   var groups = [
     genes.slice(0, 32),
     genes.slice(32, 64),
@@ -441,11 +462,17 @@ function getTraits(genes) {
   let pattern = getPatternsFromGroup(groups[1]);
   let color = getColorsFromGroup(groups[1], groups[0].slice(0, 4));
   let eyes = getPartsFromGroup("eyes", groups[2], region);
+  if (jpParts.find(p=>p==eyes.d.name)) jpcount++;
   let mouth = getPartsFromGroup("mouth", groups[3], region);
+  if (jpParts.find(p=>p==mouth.d.name)) jpcount++;
   let ears = getPartsFromGroup("ears", groups[4], region);
+  if (jpParts.find(p=>p==ears.d.name)) jpcount++;
   let horn = getPartsFromGroup("horn", groups[5], region);
+  if (jpParts.find(p=>p==horn.d.name)) jpcount++;
   let back = getPartsFromGroup("back", groups[6], region);
+  if (jpParts.find(p=>p==back.d.name)) jpcount++;
   let tail = getPartsFromGroup("tail", groups[7], region);
+  if (jpParts.find(p=>p==tail.d.name)) jpcount++;
   return {
     cls: cls,
     region: region,
@@ -457,6 +484,7 @@ function getTraits(genes) {
     horn: horn,
     back: back,
     tail: tail,
+    jpcount: jpcount,
   };
 }
 
@@ -1280,6 +1308,24 @@ function renderCard(anc, axie) {
       content.className = content.className.replace("invisible", "visible");
     }
 
+    if (axie.traits.jpcount >= options.axieEx_japanCount) {
+      let imgHolders = anc.querySelectorAll("img");
+      let imgHolder = null;
+      for (let i = 0; i < imgHolders.length; i++) {
+        if (imgHolders[i].src.match(/.*transparent.*/)) {
+          imgHolder = imgHolders[i];
+          break;
+        }
+      }
+      if (imgHolder) {
+        imgHolder.style["background-image"] = "url(https://i.imgur.com/t6808rn.gif)";
+        imgHolder.style["background-position-x"] = "0px";
+        imgHolder.style["background-position-y"] = "0px";
+        imgHolder.style["background-size"] = "15%";
+        imgHolder.style["background-repeat"] = "no-repeat";
+      }
+    }
+
     if (axie.auction && options.axieEx_auction) {
       let auctionHolder = breedHolder[1].cloneNode(true);
       auctionHolder.style.textAlign = "center";
@@ -2016,6 +2062,7 @@ getOptions((response) => {
   options[ENABLE_OPTION] = response[ENABLE_OPTION];
   options[SHOW_BREEDS_STATS_OPTION] = response[SHOW_BREEDS_STATS_OPTION];
   options[MINIMAL_OPTION] = response[MINIMAL_OPTION];
+  options[JAPAN_COUNT] = response[JAPAN_COUNT] - 0;
   options[SHOW_EGG_PARENTS] = response[SHOW_EGG_PARENTS];
   options[SHOW_AUCTION] = response[SHOW_AUCTION];
   options[FIRE_THRESHOLD] = response[FIRE_THRESHOLD] - 0;
