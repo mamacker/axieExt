@@ -462,17 +462,19 @@ function getTraits(genes) {
   let pattern = getPatternsFromGroup(groups[1]);
   let color = getColorsFromGroup(groups[1], groups[0].slice(0, 4));
   let eyes = getPartsFromGroup("eyes", groups[2], region);
-  if (jpParts.find(p=>p==eyes.d.name)) jpcount++;
   let mouth = getPartsFromGroup("mouth", groups[3], region);
-  if (jpParts.find(p=>p==mouth.d.name)) jpcount++;
   let ears = getPartsFromGroup("ears", groups[4], region);
-  if (jpParts.find(p=>p==ears.d.name)) jpcount++;
   let horn = getPartsFromGroup("horn", groups[5], region);
-  if (jpParts.find(p=>p==horn.d.name)) jpcount++;
   let back = getPartsFromGroup("back", groups[6], region);
-  if (jpParts.find(p=>p==back.d.name)) jpcount++;
   let tail = getPartsFromGroup("tail", groups[7], region);
-  if (jpParts.find(p=>p==tail.d.name)) jpcount++;
+  if (options.axieEx_japanCount > 0) {
+    if (jpParts.find(p=>p==eyes.d.name)) jpcount++;
+    if (jpParts.find(p=>p==mouth.d.name)) jpcount++;
+    if (jpParts.find(p=>p==ears.d.name)) jpcount++;
+    if (jpParts.find(p=>p==horn.d.name)) jpcount++;
+    if (jpParts.find(p=>p==back.d.name)) jpcount++;
+    if (jpParts.find(p=>p==tail.d.name)) jpcount++;
+  }
   return {
     cls: cls,
     region: region,
@@ -1308,7 +1310,7 @@ function renderCard(anc, axie) {
       content.className = content.className.replace("invisible", "visible");
     }
 
-    if (axie.traits.jpcount >= options.axieEx_japanCount) {
+    if (options.axieEx_japanCount > 0 && axie.traits.jpcount >= options.axieEx_japanCount) {
       let imgHolders = anc.querySelectorAll("img");
       let imgHolder = null;
       for (let i = 0; i < imgHolders.length; i++) {
